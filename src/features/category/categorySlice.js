@@ -1,11 +1,19 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { fetchDataByCategory } from "../../api/productCategory";
 
+
 export const getCategoryData = createAsyncThunk(
   "category/getCategoryData",
   async () => {
     const data = await fetchDataByCategory();
-    return data;
+    // const data = await fetchProductData();
+     const uniqueCategories = [
+      "All",
+      ...new Set(data.map(item => item.category)),
+    ];
+    console.log("Fetched categories by unique:", uniqueCategories);
+
+    return uniqueCategories;
   }
 );
 
@@ -17,9 +25,9 @@ const initialState = {
 export const categorySlice = createSlice({
   name: "category",
   initialState,
-    reducers: {},
-  
-    extraReducers: (builder) => {
+  reducers: {},
+
+  extraReducers: (builder) => {
     builder
       .addCase(getCategoryData.pending, (state) => {
         state.status = "loading";
@@ -34,7 +42,5 @@ export const categorySlice = createSlice({
       });
   },
 });
-
-
 
 export default categorySlice.reducer;

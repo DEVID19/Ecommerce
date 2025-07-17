@@ -20,22 +20,22 @@ const Carousel = () => {
   if (status === "loading") return <p>Loading...</p>;
   if (status === "failed") return <p>Error in fetching the Productdata</p>;
 
-  const laptops = products.filter(
-    (item) => item.category.toLowerCase() === "laptops"
-  );
+  // const laptops = products.filter(
+  //   (item) => item.category.toLowerCase() === "laptops"
+  // );
 
-  const smartphones = products.filter(
-    (item) => item.category.toLowerCase() === "mobile-accessories"
-  );
-  const watches = products.filter(
-    (item) => item.category.toLowerCase() === "mens-watches"
-  );
-  // Slice separately to balance both categories
-  const mixedCarouselData = [
-    ...laptops.slice(0, 4),
-    ...smartphones.slice(0, 3),
-    ...watches.slice(0, 6),
-  ];
+  // const smartphones = products.filter(
+  //   (item) => item.category.toLowerCase() === "mobile-accessories"
+  // );
+  // const watches = products.filter(
+  //   (item) => item.category.toLowerCase() === "mens-watches"
+  // );
+  // // Slice separately to balance both categories
+  // const mixedCarouselData = [
+  //   ...laptops.slice(0, 4),
+  //   ...smartphones.slice(0, 3),
+  //   ...watches.slice(0, 6),
+  // ];
   // console.log(mixedCarouselData);
   // console.log(products.map((item) => item.category));
 
@@ -100,7 +100,7 @@ const Carousel = () => {
   return (
     <div>
       <Slider {...settings} className="overflow-hidden">
-        {mixedCarouselData?.slice(0, 15)?.map((item, index) => {
+        {products?.slice(0, 7)?.map((item, index) => {
           return (
             <div
               key={index}
@@ -130,7 +130,7 @@ const Carousel = () => {
               </div> */}
                 <div className="sm:w-[550px] sm:h-[550px] w-[270px] h-[270px]  rounded-full hover:scale-105 transition-all bg-white p-4 flex items-center justify-center shadow-2xl shadow-red-400 overflow-hidden">
                   <img
-                    src={item.images[0]}
+                    src={item.image}
                     alt={item.title}
                     className="object-contain w-full h-full"
                   />

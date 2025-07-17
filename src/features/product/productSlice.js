@@ -5,13 +5,15 @@ export const getProductData = createAsyncThunk(
   "product/getProductData",
   async () => {
     const data = await fetchProductData();
-    return data;
+    return data.products;
   }
 );
 
 const initialState = {
   products: [],
   filteredProducts: [],
+  categories: [],
+  brands: [],
   status: "idle",
   error: null,
 };
@@ -19,15 +21,19 @@ export const productSlice = createSlice({
   name: "product",
   initialState,
   reducers: {
-    filterByCategory: (state, action) => {
-      const category = action.payload;
-      if (category === "all") {
-        state.filteredProducts = state.products;
-      } else {
-        state.filteredProducts = state.products.filter(
-          (item) => item.category.toLowerCase() === category.toLowerCase()
-        );
-      }
+    filterProductData: (state, action) => {
+      const { search, category, brand, priceRange } = action.payload;
+
+      state.filteredProducts = state.products.filter(
+        (item) =>
+          item.title.toLowerCase().includes(search.toLowerCase()) &&
+          (category.toLowerCase() === "all" ||
+            item.category.toLowerCase() === category.toLowerCase()) &&
+          (brand.toLowerCase() === "all" ||
+            item.brand.toLowerCase() === brand.toLowerCase()) &&
+          item.price >= priceRange[0] &&
+          item.price <= priceRange[1]
+      );
     },
   },
 
@@ -38,8 +44,19 @@ export const productSlice = createSlice({
       })
       .addCase(getProductData.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.filteredProducts = action.payload;
-        state.products = action.payload.products;
+        state.products = action.payload;
+        state.filteredProducts = [...action.payload]; // Clone to avoid mutation issues
+        // 🔥 Extract categories dynamically here
+        const uniqueCategories = [
+          "ALL",
+          ...new Set(action.payload.map((item) => item.category)),
+        ];
+        state.categories = uniqueCategories;
+        const uniqueBrands = [
+          "ALL",
+          ...new Set(action.payload.map((item) => item.brand)),
+        ];
+        state.brands = uniqueBrands;
       })
       .addCase(getProductData.rejected, (state, action) => {
         state.status = "failed";
@@ -48,6 +65,6 @@ export const productSlice = createSlice({
   },
 });
 
-export const { filterByCategory } = productSlice.actions;
+export const { filterProductData } = productSlice.actions;
 
 export default productSlice.reducer;

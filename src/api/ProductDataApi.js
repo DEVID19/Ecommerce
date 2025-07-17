@@ -1,18 +1,18 @@
-// import axios from "axios";
+import axios from "axios";
 
-// export const fetchProductData = async () => {
-//   try {
-//     const response = await axios.get(
-//       "https://fakestoreapi.in/api/products?limit=150"
-//     );
-//     const data = response.data;
-//     console.log("Fetched data:", data);
-//     return data;
-//   } catch (error) {
-//     console.error("Error fetching data:", error);
-//     throw error;
-//   }
-// };
+export const fetchProductData = async () => {
+  try {
+    const response = await axios.get(
+      "https://fakestoreapi.in/api/products?limit=150"
+    );
+    const data = response.data;
+    console.log("Fetched data:", data);
+    return data;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    throw error;
+  }
+};
 
 // import axios from "axios";
 
@@ -46,18 +46,18 @@
 
 
 
-import axios from "axios";
+// import axios from "axios";
 
-export const fetchProductData = async () => {
-  try {
-    const response = await axios.get(
-      "https://dummyjson.com/products?limit=100"
-    );
-    const data = response.data;
-    console.log("Fetched data:", data);
-    return data;
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    throw error;
-  }
-}
+// export const fetchProductData = async () => {
+//   try {
+//     const response = await axios.get(
+//       "https://dummyjson.com/products?limit=100"
+//     );
+//     const data = response.data;
+//     console.log("Fetched data:", data);
+//     return data;
+//   } catch (error) {
+//     console.error("Error fetching data:", error);
+//     throw error;
+//   }
+// }
