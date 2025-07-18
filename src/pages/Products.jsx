@@ -7,6 +7,7 @@ import {
   getProductData,
 } from "../features/product/productSlice";
 import ProductCard from "../components/ProductCard";
+import Pagination from "../components/Pagination";
 
 const Products = () => {
   const dispatch = useDispatch();
@@ -17,6 +18,7 @@ const Products = () => {
   const [category, setCategory] = useState("ALL");
   const [brand, setBrand] = useState("ALL");
   const [priceRange, setPriceRange] = useState([0, 5000]);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     if (status === "idle") {
@@ -40,10 +42,18 @@ const Products = () => {
 
   const handleCategoryChange = (e) => {
     setCategory(e.target.value);
+    setPage(1); 
   };
   const handleBrandChange = (e) => {
     setBrand(e.target.value);
+    setPage(1); 
   };
+
+  const pageHandler = (selectedPage) => {
+    setPage(selectedPage);
+    window.scrollTo(0, 0);
+  };
+  const dynamicPage = Math.ceil(filteredProducts?.length / 8);
 
   return (
     <div className="max-w-6xl mx-auto px-4 mb-10">
@@ -64,10 +74,17 @@ const Products = () => {
           {filteredProducts.length > 0 ? (
             <div className="flex flex-col justify-center items-center">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-7 mt-10">
-                {filteredProducts.map((product, index) => {
-                  return <ProductCard key={index} product={product} />;
-                })}
+                {filteredProducts
+                  ?.slice(page * 8 - 8, page * 8)
+                  ?.map((product, index) => {
+                    return <ProductCard key={index} product={product} />;
+                  })}
               </div>
+              <Pagination
+                page={page}
+                pageHandler={pageHandler}
+                dynamicPage={dynamicPage}
+              />
             </div>
           ) : (
             <div className="flex justify-center items-center md:h-[600px] md:w-[900px] mt-10">

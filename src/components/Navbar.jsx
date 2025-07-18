@@ -13,11 +13,13 @@ import LocationSelector from "../models/LocationSelector";
 import { fetchUserLocation } from "../api/LocationApi";
 import { HiMenuAlt1, HiMenuAlt3 } from "react-icons/hi";
 import ResponsiveMenu from "./ResponsiveMenu";
+import { useSelector } from "react-redux";
 
 const Navbar = () => {
   const [location, setLocation] = useState(null);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [openNav, setOpenNav] = useState(false);
+  const { totalQuantity } = useSelector((state) => state.cart);
   useEffect(() => {
     const getLocation = async () => {
       try {
@@ -119,7 +121,7 @@ const Navbar = () => {
           <Link to={"/cart"} className="relative">
             <IoCartOutline className="h-7 w-7  " />
             <span className="bg-red-500 px-2 rounded-full absolute -top-3  -right-3 text-white ">
-              0
+              {totalQuantity}
             </span>
           </Link>
           <div className="hidden md:block">
