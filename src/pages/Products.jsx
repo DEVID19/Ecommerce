@@ -8,6 +8,7 @@ import {
 } from "../features/product/productSlice";
 import ProductCard from "../components/ProductCard";
 import Pagination from "../components/Pagination";
+import MobileFilter from "../components/MobileFilter";
 
 const Products = () => {
   const dispatch = useDispatch();
@@ -19,6 +20,7 @@ const Products = () => {
   const [brand, setBrand] = useState("ALL");
   const [priceRange, setPriceRange] = useState([0, 5000]);
   const [page, setPage] = useState(1);
+  const [openFilter, setOpenFilter] = useState(false)
 
   useEffect(() => {
     if (status === "idle") {
@@ -57,6 +59,7 @@ const Products = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 mb-10">
+       <MobileFilter openFilter={openFilter} setOpenFilter={setOpenFilter} search={search} setSearch={setSearch} brand={brand} setBrand={setBrand} priceRange={priceRange} setPriceRange={setPriceRange} category={category} setCategory={setCategory} handleCategoryChange={handleCategoryChange} handleBrandChange={handleBrandChange}/>
       {products.length > 0 ? (
         <div className="flex gap-8 ">
           <FilterSection

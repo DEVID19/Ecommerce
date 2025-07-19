@@ -1,8 +1,6 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Loading from "../assets/Loading4.webm";
-// import Breadcrums from "../components/Breadcrums";
 import { IoCartOutline } from "react-icons/io5";
 import Breadcrums from "../components/Breadcrums";
 import { useDispatch } from "react-redux";
@@ -12,6 +10,7 @@ import { getSingleProduct } from "../api/SingleProductApi";
 const SingleProduct = () => {
   const params = useParams();
   const [SingleProduct, setSingleProduct] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -73,14 +72,17 @@ const SingleProduct = () => {
                 <input
                   type="number"
                   min={1}
-                  value={1}
+                  value={quantity}
+                  onChange={(e) => setQuantity(Number(e.target.value))}
                   className="w-20 border border-gray-300 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 foucs:ring-red-500"
                 />
               </div>
 
               <div className="flex gap-4 mt-4">
                 <button
-                  onClick={() => dispatch(addToCart(SingleProduct))}
+                  onClick={() =>
+                    dispatch(addToCart({ ...SingleProduct, quantity }))
+                  }
                   className="px-6 flex gap-2 py-2 text-lg bg-red-500 text-white rounded-md"
                 >
                   <IoCartOutline className="w-6 h-6" /> Add to Cart

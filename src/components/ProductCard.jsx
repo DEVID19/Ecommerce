@@ -1,5 +1,4 @@
 import React from "react";
-import toast from "react-hot-toast";
 import { IoCartOutline } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart, calculateTotal } from "../features/cart/cartSlice";
@@ -9,17 +8,10 @@ const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
   const { cartItems } = useSelector((state) => state.cart);
 
-  const handleAddToCart = () => {
-    const IsAlreadyinCart = cartItems.find((item) => item.id === product.id);
-    if (IsAlreadyinCart) {
-      toast.error("Product is already in the Cart!");
-    } else {
-      toast.success("Product is added in Cart!");
-      dispatch(addToCart({ ...product, quantity: 1 }));
-      dispatch(calculateTotal());
-    }
-  };
-
+ const handleAddToCart = () => {
+  dispatch(addToCart({ ...product, quantity: 1 }));
+  dispatch(calculateTotal());
+};
   const navigate = useNavigate();
   return (
     <div className="border relative border-gray-100 rounded-2xl cursor-pointer hover:scale-105 hover:shadow-2xl transition-all p-2 h-max">

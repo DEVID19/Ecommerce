@@ -1,16 +1,12 @@
-import axios, { Axios } from "axios";
+import axios from "axios";
 
-export const fetchDataByCategory = async () => {
+export const fetchDataByCategory = async (category) => {
   try {
-    // const response = await axios.get("https://dummyjson.com/products/categories")
     const response = await axios.get(
-      "https://fakestoreapi.com/products"
+      `https://fakestoreapi.in/api/products/category?type=${category}`
     );
-    // const response = await axios.get(
-    //   "https://fakestoreapi.in/api/products?limit=150"
-    // );
-    const data = response.data;
-    console.log("Fetched categories:", data);
+    const data = response.data.products;
+    console.log("Fetched categories data :", data);
     return data;
   } catch (error) {
     console.log("Error fetching categories:", error);

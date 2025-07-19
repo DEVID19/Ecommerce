@@ -6,10 +6,12 @@ import "slick-carousel/slick/slick-theme.css";
 import { AiOutlineArrowLeft, AiOutlineArrowRight } from "react-icons/ai";
 import Slider from "react-slick";
 import Category from "./Category ";
+import { useNavigate } from "react-router-dom";
 
 const Carousel = () => {
   const dispatch = useDispatch();
   const { products, status } = useSelector((state) => state.products);
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (status === "idle") {
@@ -117,7 +119,7 @@ const Carousel = () => {
                   <p className="md:w-[500px] line-clamp-3 text-gray-400 pr-7">
                     {item.description}
                   </p>
-                  <button className="bg-gradient-to-r from-red-500 to-purple-500 text-white px-3 py-2 rounded-md cursor-pointer mt-2">
+                  <button className="bg-gradient-to-r from-red-500 to-purple-500 text-white px-3 py-2 rounded-md cursor-pointer mt-2" onClick={() => navigate(`/products/${item.id}`)}>
                     Shop Now
                   </button>
                 </div>
@@ -133,6 +135,7 @@ const Carousel = () => {
                     src={item.image}
                     alt={item.title}
                     className="object-contain w-full h-full"
+                    onClick={() => navigate(`/products/${item.id}`)}
                   />
                 </div>
               </div>

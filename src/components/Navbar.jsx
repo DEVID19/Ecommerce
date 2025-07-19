@@ -19,7 +19,7 @@ const Navbar = () => {
   const [location, setLocation] = useState(null);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [openNav, setOpenNav] = useState(false);
-  const { totalQuantity } = useSelector((state) => state.cart);
+  const {cartItems } = useSelector((state) => state.cart);
   useEffect(() => {
     const getLocation = async () => {
       try {
@@ -121,7 +121,7 @@ const Navbar = () => {
           <Link to={"/cart"} className="relative">
             <IoCartOutline className="h-7 w-7  " />
             <span className="bg-red-500 px-2 rounded-full absolute -top-3  -right-3 text-white ">
-              {totalQuantity}
+              {cartItems.length}
             </span>
           </Link>
           <div className="hidden md:block">

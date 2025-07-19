@@ -1,19 +1,11 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { fetchDataByCategory } from "../../api/productCategory";
-
+import { fetchDataByCategory } from "../../api/ProductCategory";
 
 export const getCategoryData = createAsyncThunk(
   "category/getCategoryData",
-  async () => {
-    const data = await fetchDataByCategory();
-    // const data = await fetchProductData();
-     const uniqueCategories = [
-      "All",
-      ...new Set(data.map(item => item.category)),
-    ];
-    console.log("Fetched categories by unique:", uniqueCategories);
-
-    return uniqueCategories;
+  async (category) => {
+    const data = await fetchDataByCategory(category);
+    return data;
   }
 );
 
@@ -35,11 +27,12 @@ export const categorySlice = createSlice({
       .addCase(getCategoryData.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.categories = action.payload;
+        console.log("Fetched categories data :", action.payload);
       })
       .addCase(getCategoryData.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message;
-      });
+      }); 
   },
 });
 
