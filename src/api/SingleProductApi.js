@@ -2,8 +2,9 @@ import axios from "axios";
 
 export const getSingleProduct = async (id) => {
   try {
-    const res = await axios.get(`https://fakestoreapi.in/api/products/${id}`);
-    const product = res.data.product;
+    //  const res = await axios.get(`https://fakestoreapi.in/api/products/${id}`);
+    const res = await axios.get(`http://localhost:5000/products/${id}`);
+    const product = res.data; //.product
     console.log(product);
     return product;
   } catch (error) {

@@ -3,7 +3,8 @@ import axios from "axios";
 export const fetchProductData = async () => {
   try {
     const response = await axios.get(
-      "https://fakestoreapi.in/api/products?limit=150"
+      // "https://fakestoreapi.in/api/products?limit=150"
+      "http://localhost:5000/products"
     );
     const data = response.data;
     console.log("Fetched data:", data);
@@ -43,8 +44,6 @@ export const fetchProductData = async () => {
 //     throw error;
 //   }
 // };
-
-
 
 // import axios from "axios";
 

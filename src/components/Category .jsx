@@ -23,7 +23,7 @@ const Category = () => {
   return (
     <div className="bg-[rgb(16,24,41)]">
       <div className="max-w-7xl mx-auto flex flex-wrap gap-4 items-center justify-center md:justify-around py-7 px-4">
-        {categories.map((item, index) => (
+        {categories?.slice(1)?.map((item, index) => (
           <button
             key={index}
             onClick={()=>navigate(`/category/${item}`)} 

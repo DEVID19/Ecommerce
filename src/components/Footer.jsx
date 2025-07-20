@@ -16,7 +16,7 @@ const Footer = () => {
         <div className="mb-6 md:mb-0">
           <Link to="/">
             {/* <img src={Logo} alt="" className='w-32'/> */}
-            <h1 className="text-red-500 text-2xl font-bold">Zaptro</h1>
+            <h1 className="text-red-500 text-2xl font-bold">Zaptra</h1>
           </Link>
           <p className="mt-2 text-sm">
             Powering Your World with the Best in Electronics.
@@ -73,7 +73,7 @@ const Footer = () => {
       <div className="mt-8 border-t border-gray-700 pt-6 text-center text-sm">
         <p>
           &copy; {new Date().getFullYear()}{" "}
-          <span className="text-red-500">Zaptro</span>. All rights reserved
+          <span className="text-red-500">Zaptra</span>. All rights reserved
         </p>
       </div>
     </footer>
