@@ -17,9 +17,7 @@ import { useEffect, useState } from "react";
 const Cart = () => {
   const [location, setLocation] = useState(null);
   const dispatch = useDispatch();
-  const { cartItems, totalPrice } = useSelector(
-    (state) => state.cart
-  );
+  const { cartItems, totalPrice } = useSelector((state) => state.cart);
   const getLocation = async () => {
     try {
       const data = await fetchUserLocation();
@@ -47,7 +45,7 @@ const Cart = () => {
                     key={index}
                     className="bg-gray-100 p-5 rounded-md flex items-center justify-between mt-3 w-full"
                   >
-                    <div className='flex items-center gap-4'>
+                    <div className="flex items-center gap-4">
                       <img
                         src={item.image}
                         alt={item.title}
@@ -249,3 +247,105 @@ const Cart = () => {
 };
 
 export default Cart;
+
+// import React, { useEffect } from "react";
+// import { useDispatch, useSelector } from "react-redux";
+// import {
+//   loadCartFromAppwrite,
+//   increaseQuantity,
+//   decreaseQuantity,
+//   removeFromCart,
+//   calculateTotal,
+// } from "../features/cart/cartSlice";
+// import { useUser } from "@clerk/clerk-react";
+// import { Link } from "react-router-dom";
+
+// const CartPage = () => {
+//   const dispatch = useDispatch();
+//   const { isSignedIn, user } = useUser();
+//   const cartItems = useSelector((state) => state.cart.cartItems);
+//   const totalQuantity = useSelector((state) => state.cart.totalQuantity);
+//   const totalPrice = useSelector((state) => state.cart.totalPrice);
+//   const isLoading = useSelector((state) => state.cart.isLoading);
+
+//   useEffect(() => {
+//     if (isSignedIn && user?.id) {
+//       dispatch(loadCartFromAppwrite(user.id));
+//     }
+//   }, [dispatch, isSignedIn, user]);
+
+//   useEffect(() => {
+//     dispatch(calculateTotal());
+//   }, [cartItems, dispatch]);
+
+//   if (isLoading) {
+//     return <p className="text-center text-lg">Loading your cart...</p>;
+//   }
+
+//   if (!cartItems.length) {
+//     return (
+//       <div className="text-center mt-10">
+//         <p className="text-xl">Your cart is empty 😕</p>
+//         <Link
+//           to="/"
+//           className="inline-block mt-4 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+//         >
+//           Continue Shopping
+//         </Link>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="max-w-4xl mx-auto px-4 py-10">
+//       <h1 className="text-3xl font-bold mb-6">Your Cart</h1>
+//       {cartItems.map((item) => (
+//         <div
+//           key={item.id}
+//           className="flex items-center justify-between border-b py-4"
+//         >
+//           <div className="flex items-center gap-4">
+//             <img
+//               src={item.image}
+//               alt={item.title}
+//               className="w-20 h-20 object-contain"
+//             />
+//             <div>
+//               <h2 className="font-semibold">{item.title}</h2>
+//               <p>₹{item.price}</p>
+//             </div>
+//           </div>
+//           <div className="flex items-center gap-4">
+//             <button
+//               onClick={() => dispatch(decreaseQuantity({ id: item.id }))}
+//               className="px-3 py-1 bg-gray-300 rounded"
+//             >
+//               -
+//             </button>
+//             <span>{item.quantity}</span>
+//             <button
+//               onClick={() => dispatch(increaseQuantity({ id: item.id }))}
+//               className="px-3 py-1 bg-gray-300 rounded"
+//             >
+//               +
+//             </button>
+//             <button
+//               onClick={() => dispatch(removeFromCart({ id: item.id }))}
+//               className="ml-4 px-4 py-2 bg-red-500 text-white rounded"
+//             >
+//               Remove
+//             </button>
+//           </div>
+//         </div>
+//       ))}
+//       <div className="mt-10 text-right">
+//         <p className="text-xl font-bold">Total Items: {totalQuantity}</p>
+//         <p className="text-xl font-bold">
+//           Total Price: ₹{totalPrice.toFixed(2)}
+//         </p>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default CartPage;

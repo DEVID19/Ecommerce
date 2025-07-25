@@ -1,4 +1,4 @@
-import { databases, Query, account } from "../appwrite/appwriteClient";
+import { account, databases, Query} from "../appwrite/appwriteClient";
 
 export const ensureGuestSession = async () => {
   try {
@@ -12,11 +12,11 @@ export const ensureGuestSession = async () => {
 
 export const fetchProductData = async () => {
   try {
-    await ensureGuestSession(); // ✅ Ensure session exists before fetching
+     await ensureGuestSession(); // ✅ Ensure session exists before fetching
 
     const response = await databases.listDocuments(
       import.meta.env.VITE_APPWRITE_DATABASE_ID,
-      import.meta.env.VITE_APPWRITE_COLLECTION_ID,
+      import.meta.env.VITE_APPWRITE_PRODUCTS_COLLECTION_ID,
       [Query.limit(100)]
     );
 

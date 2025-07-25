@@ -4,7 +4,7 @@ export const fetchDataByCategory = async (category) => {
   try {
     const response = await databases.listDocuments(
       import.meta.env.VITE_APPWRITE_DATABASE_ID,
-      import.meta.env.VITE_APPWRITE_COLLECTION_ID,
+      import.meta.env.VITE_APPWRITE_PRODUCTS_COLLECTION_ID,
       [
         Query.equal("category", category),
         Query.limit(100), // Optional but recommended

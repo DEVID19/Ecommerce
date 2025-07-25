@@ -1,17 +1,16 @@
 import React from "react";
 import { IoCartOutline } from "react-icons/io5";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { addToCart, calculateTotal } from "../features/cart/cartSlice";
 import { useNavigate } from "react-router-dom";
 
 const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
-  const { cartItems } = useSelector((state) => state.cart);
 
- const handleAddToCart = () => {
-  dispatch(addToCart({ ...product, quantity: 1 }));
-  dispatch(calculateTotal());
-};
+  const handleAddToCart = () => {
+    dispatch(addToCart({ ...product, quantity: 1 }));
+    dispatch(calculateTotal());
+  };
   const navigate = useNavigate();
   return (
     <div className="border relative border-gray-100 rounded-2xl cursor-pointer hover:scale-105 hover:shadow-2xl transition-all p-2 h-max">

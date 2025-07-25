@@ -58,14 +58,13 @@ import {
   SignedOut,
   SignInButton,
   UserButton,
-  useUser,
 } from "@clerk/clerk-react";
 import { CalendarDays, Menu } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const Topbar = ({ toggleSidebar }) => {
   const [currentDate, setCurrentDate] = useState("");
-  const { user } = useUser();
+  // const { user } = useUser();
 
   useEffect(() => {
     const date = new Date();
@@ -98,7 +97,8 @@ const Topbar = ({ toggleSidebar }) => {
 
       {/* Right - Avatar + name */}
       <div className="flex items-center gap-3">
-        <SignedOut>
+        <h1>Heloo User </h1>
+        {/* <SignedOut>
           <SignInButton className="bg-red-500 text-white px-3 py-1 rounded-md cursor-pointer" />
         </SignedOut>
 
@@ -112,7 +112,7 @@ const Topbar = ({ toggleSidebar }) => {
               {user?.primaryEmailAddress?.emailAddress}
             </p>
           </div>
-        </SignedIn>
+        </SignedIn> */}
       </div>
     </header>
   );

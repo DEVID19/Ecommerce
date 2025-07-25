@@ -9,7 +9,7 @@ export const getSingleProduct = async (id) => {
   try {
     const response = await databases.listDocuments(
       import.meta.env.VITE_APPWRITE_DATABASE_ID,
-      import.meta.env.VITE_APPWRITE_COLLECTION_ID,
+      import.meta.env.VITE_APPWRITE_PRODUCTS_COLLECTION_ID,
       [
         Query.equal("id", Number(id)),
         Query.limit(1), // Optional: Optimizes query

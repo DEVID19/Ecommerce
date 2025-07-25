@@ -14,6 +14,9 @@ import AdminOrders from "./admin/pages/AdminOrders";
 import AdminCustomers from "./admin/pages/AdminCustomers";
 import AdminAnalytics from "./admin/pages/AdminAnalytics";
 import AdminDashboard from "./admin/pages/AdminDashboard";
+import Login from "./pages/Login";
+import Signup from "./pages/SignUp";
+import AdminLogin from "./pages/AdminLogin";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -35,6 +38,9 @@ const AppRoutes = () => {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/login" element={<Login />} />
+  <Route path="/signup" element={<Signup />} />
+  <Route path="/admin-login" element={<AdminLogin />} />
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>

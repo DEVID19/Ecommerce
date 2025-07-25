@@ -74,3 +74,27 @@ export const {
   calculateTotal,
 } = cartSlice.actions;
 export default cartSlice.reducer;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

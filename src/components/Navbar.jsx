@@ -125,12 +125,12 @@ const Navbar = () => {
             </span>
           </Link>
           <div className="hidden md:block">
-            <SignedOut>
+            {/* <SignedOut>
               <SignInButton className="bg-red-500 text-white px-3 py-1  rounded-md cursor-pointer" />
             </SignedOut>
             <SignedIn>
               <UserButton />
-            </SignedIn>
+            </SignedIn> */}
           </div>
           {openNav ? (
             <HiMenuAlt3
