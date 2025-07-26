@@ -10,7 +10,6 @@ import {
   increaseQuantity,
   removeFromCart,
 } from "../features/cart/cartSlice";
-import { useUser } from "@clerk/clerk-react";
 import { fetchUserLocation } from "../api/LocationApi";
 import { useEffect, useState } from "react";
 
@@ -31,7 +30,7 @@ const Cart = () => {
     getLocation(); // ✅ Works fine now
   }, []);
 
-  const { user } = useUser();
+  
   return (
     <div className="max-w-6xl mx-auto mb-5 px-4 md:px-0 mt-10">
       {cartItems.length > 0 ? (
@@ -105,7 +104,7 @@ const Cart = () => {
                     type="text "
                     placeholder="Enter your name"
                     className="p-2 rounded-md "
-                    value={user?.fullName}
+                    // value={user?.fullName}
                   />
                 </div>
                 <div className="flex flex-col space-y-1">
