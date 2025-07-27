@@ -17,9 +17,31 @@ import AdminDashboard from "./admin/pages/AdminDashboard";
 import Login from "./pages/Login";
 import Signup from "./pages/SignUp";
 import AdminLogin from "./pages/AdminLogin";
+import { useDispatch } from "react-redux";
+import { useEffect } from "react";
+import { account } from "./appwrite/appwriteClient";
+import { logout, setUser } from "./features/auth/authSlice";
 
 const AppRoutes = () => {
   const location = useLocation();
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const user = await account.get();
+        dispatch(setUser(user));
+      // eslint-disable-next-line no-unused-vars
+      } catch (err) {
+        // Not logged in
+        console.log("No active session. User not logged in.");
+        dispatch(logout()); // Clear auth state if no session
+      }
+    }
+    checkSession();
+  }, [dispatch]);
+
 
   // Check if the path starts with "/admin"
   const isAdminRoute = location.pathname.startsWith("/admin");

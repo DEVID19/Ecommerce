@@ -59,6 +59,8 @@ import { useNavigate } from "react-router-dom";
 import { account } from "../appwrite/appwriteClient";
 import { UserPlus } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
+import { setUser } from "../features/auth/authSlice";
+import { useDispatch } from "react-redux";
 
 export default function Signup() {
   const [name, setName] = useState("");
@@ -67,38 +69,63 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const dispatch = useDispatch()
+  // const handleSignup = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   setError("");
+  //   try {
+  //     // Create a sanitized user ID from name
+  //     const userId = name
+  //       .trim()
+  //       .toLowerCase()
+  //       .replace(/[^a-z0-9._-]/g, "") // only allowed chars
+  //       .slice(0, 36); // Appwrite limit
 
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    try {
-      // Create a sanitized user ID from name
-      const userId = name
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9._-]/g, "") // only allowed chars
-        .slice(0, 36); // Appwrite limit
+  //     const user = await account.create(
+  //       userId || ID.unique(),
+  //       email,
+  //       password,
+  //       name
+  //     );
 
-      const user = await account.create(
-        userId || ID.unique(),
-        email,
-        password,
-        name
-      );
+  //     // Auto-login after signup
+  //     await account.createEmailPasswordSession(email, password);
 
-      // Auto-login after signup
-      await account.createEmailPasswordSession(email, password);
+  //     console.log("User created:", user);
+  //     navigate("/");
+  //   } catch (err) {
+  //     console.error(err);
+  //     setError(err?.message || "Signup failed");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+const handleSignup = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError("");
+  try {
+    const userId = name
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9._-]/g, "")
+      .slice(0, 36);
 
-      console.log("User created:", user);
-      navigate("/");
-    } catch (err) {
-      console.error(err);
-      setError(err?.message || "Signup failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+    await account.create(userId || ID.unique(), email, password, name);
+    await account.createEmailPasswordSession(email, password);
+    
+    const user = await account.get(); // Get logged-in user details
+
+    dispatch(setUser(user)); // 👈 Store user in Redux
+    navigate("/");
+  } catch (err) {
+    console.error(err);
+    setError(err?.message || "Signup failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const signupWithGoogle = async () => {
     account.createOAuth2Session(
