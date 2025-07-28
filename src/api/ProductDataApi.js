@@ -1,18 +1,18 @@
-import {  account, databases, Query} from "../appwrite/appwriteClient";
+import { account, databases, Query } from "../appwrite/appwriteClient";
 
-export const ensureGuestSession = async () => {
-  try {
-    await account.get(); // Check if session exists
-  } catch (err) {
-    // No session? Create anonymous session
-    await account.createAnonymousSession();
-    console.log("Anonymous session created.");
-  }
-};
+// export const ensureGuestSession = async () => {
+//   try {
+//     await account.get(); // Check if session exists
+//   } catch (err) {
+//     // No session? Create anonymous session
+//     await account.createAnonymousSession();
+//     console.log("Anonymous session created.");
+//   }
+// };
 
 export const fetchProductData = async () => {
   try {
-      await ensureGuestSession(); // ✅ Ensure session exists before fetching
+    // await ensureGuestSession(); // ✅ Ensure session exists before fetching
 
     const response = await databases.listDocuments(
       import.meta.env.VITE_APPWRITE_DATABASE_ID,

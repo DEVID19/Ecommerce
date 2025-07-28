@@ -1,15 +1,37 @@
 import React from "react";
 import { IoCartOutline } from "react-icons/io5";
-import { useDispatch } from "react-redux";
-import { addToCart, calculateTotal } from "../features/cart/cartSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { addItemToCart } from "../features/cart/cartSlice";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
+  const userId = useSelector((state) => state.auth.user?.$id);
 
   const handleAddToCart = () => {
-    dispatch(addToCart({ ...product, quantity: 1 }));
-    dispatch(calculateTotal());
+    if (!userId) {
+      toast.error("🔒 Login required to add items!", {
+        position: "top-center",
+        className:
+          "text-[15px] font-semibold px-4 py-3 rounded-lg shadow-md bg-white text-black whitespace-nowrap",
+      });
+
+      return;
+    }
+
+    dispatch(
+      addItemToCart({
+        userId: userId,
+        product: {
+          id: product.id,
+          title: product.title,
+          price: product.price,
+          image: product.image,
+          quantity: 1,
+        },
+      })
+    );
   };
   const navigate = useNavigate();
   return (

@@ -1,9 +1,3 @@
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  UserButton,
-} from "@clerk/clerk-react";
 import { MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { FaCaretDown } from "react-icons/fa";
@@ -14,13 +8,14 @@ import { fetchUserLocation } from "../api/LocationApi";
 import { HiMenuAlt1, HiMenuAlt3 } from "react-icons/hi";
 import ResponsiveMenu from "./ResponsiveMenu";
 import { useSelector } from "react-redux";
+import UserLogout from "../models/UserLogout";
 
 const Navbar = () => {
   const [location, setLocation] = useState(null);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [openNav, setOpenNav] = useState(false);
   const { cartItems } = useSelector((state) => state.cart);
-    const { user, isAuthenticated } = useSelector(
+    const { user , isAnonymous } = useSelector(
      (state) => state.auth
   );
     
@@ -130,7 +125,7 @@ const Navbar = () => {
             </span>
           </Link>
            <div className="hidden md:block">
-             {!isAuthenticated ? (
+            {!user || isAnonymous ? (
               // Show Sign In button when user is not authenticated
               <Link
                 to="/login"
@@ -141,8 +136,7 @@ const Navbar = () => {
             ) : (
               // Show User Profile when authenticated
               <div
-                  className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200"
-                  onClick={<UserLogout/>}
+                className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200"
               >
                 <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-semibold text-lg overflow-hidden border-2 border-gray-200">
                   <span
@@ -158,9 +152,13 @@ const Navbar = () => {
                   <span className="text-gray-500 text-xs">
                     {user?.email || "user@example.com"}
                   </span>
-                </div>
+                  </div>
+                   <div >
+              <UserLogout/>
+            </div>
               </div>
             )}
+           
           </div>
           {openNav ? (
             <HiMenuAlt3

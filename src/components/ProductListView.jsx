@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import { addToCart } from "../features/cart/cartSlice";
-import { useDispatch } from "react-redux";
+import { addItemToCart } from "../features/cart/cartSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 const ProductListView = ({ product }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const userId = useSelector((state) => state.auth.user?.$id);
 
   return (
     <div className="space-y-4 mt-2 rounded-md">
@@ -30,7 +32,20 @@ const ProductListView = ({ product }) => {
             <span className="font-semibold">Tomorrow, 17 Apr</span>
           </p>
           <button
-            onClick={() => dispatch(addToCart({ ...product, quantity: 1 }))}
+            onClick={() =>
+              dispatch(
+                addItemToCart({
+                  userId: userId,
+                  product: {
+                    productId: product.id,
+                    title: product.title,
+                    image: product.image,
+                    price: Math.round(product.price), // Ensure it's an integer
+                    quantity: 1,
+                  },
+                })
+              )
+            }
             className="bg-red-500 text-white px-3 py-1 rounded-md"
           >
             Add to Cart

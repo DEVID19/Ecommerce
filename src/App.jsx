@@ -21,6 +21,8 @@ import { useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { account } from "./appwrite/appwriteClient";
 import { logout, setUser } from "./features/auth/authSlice";
+import { getUserCartItems } from "./features/cart/cartService";
+import { calculateTotal, setCartItems } from "./features/cart/cartSlice";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -28,20 +30,28 @@ const AppRoutes = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    async function checkSession() {
+    const checkSession = async () => {
       try {
         const user = await account.get();
-        dispatch(setUser(user));
-      // eslint-disable-next-line no-unused-vars
+
+        // ✅ Only dispatch real users to Redux
+        if (!user.labels?.includes("anonymous")) {
+          dispatch(setUser(user));
+
+          // ✅ Fetch and set cart items
+          const items = await getUserCartItems(user.$id);
+          dispatch(setCartItems(items));
+          dispatch(calculateTotal());
+        } else {
+          console.log("Anonymous session - skipping Redux user update.");
+        }
       } catch (err) {
-        // Not logged in
-        console.log("No active session. User not logged in.");
-        dispatch(logout()); // Clear auth state if no session
+        console.log("No active session");
       }
-    }
+    };
+
     checkSession();
   }, [dispatch]);
-
 
   // Check if the path starts with "/admin"
   const isAdminRoute = location.pathname.startsWith("/admin");
@@ -61,8 +71,8 @@ const AppRoutes = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/login" element={<Login />} />
-  <Route path="/signup" element={<Signup />} />
-  <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>

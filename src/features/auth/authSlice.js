@@ -5,6 +5,7 @@ const initialState = {
   user: null,
   isAdmin: false,
   isAuthenticated: false,
+  isAnonymous: false,
   profileImage: null, // Store profile image data
 };
 
@@ -19,9 +20,12 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setUser: (state, action) => {
-      state.user = action.payload;
-      state.isAuthenticated = true;
-      state.isAdmin = ADMIN_EMAILS.includes(action.payload.email);
+      const user = action.payload;
+      const isAnon = user.labels?.includes("anonymous") || false;
+      state.user = user;
+      state.isAnonymous = isAnon;
+      state.isAuthenticated = !isAnon; // ✅ Only mark as authenticated if not anonymous
+      state.isAdmin = ADMIN_EMAILS.includes(user.email);
     },
 
     // For admin login only (used on AdminLogin.jsx)

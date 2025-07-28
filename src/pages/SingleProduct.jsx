@@ -3,8 +3,8 @@ import { useParams } from "react-router-dom";
 import Loading from "../assets/Loading4.webm";
 import { IoCartOutline } from "react-icons/io5";
 import Breadcrums from "../components/Breadcrums";
-import { useDispatch } from "react-redux";
-import { addToCart } from "../features/cart/cartSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { addItemToCart } from "../features/cart/cartSlice";
 import { getSingleProduct } from "../api/SingleProductApi";
 
 const SingleProduct = () => {
@@ -12,6 +12,8 @@ const SingleProduct = () => {
   const [SingleProduct, setSingleProduct] = useState("");
   const [quantity, setQuantity] = useState(1);
   const dispatch = useDispatch();
+
+  const userId = useSelector((state) => state.auth.user?.$id);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -81,7 +83,12 @@ const SingleProduct = () => {
               <div className="flex gap-4 mt-4">
                 <button
                   onClick={() =>
-                    dispatch(addToCart({ ...SingleProduct, quantity }))
+                    dispatch(
+                      addItemToCart({
+                        userId: userId, // Replace this properly
+                        product: { ...SingleProduct, quantity },
+                      })
+                    )
                   }
                   className="px-6 flex gap-2 py-2 text-lg bg-red-500 text-white rounded-md"
                 >
