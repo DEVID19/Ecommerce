@@ -13,10 +13,10 @@ const COLLECTION_ID = import.meta.env.VITE_APPWRITE_CART_COLLECTION_ID;
 export const addToCart = async ({ userId, product }) => {
   try {
     const permissions = [
-      `read("user:${userId}")`,
-      `update("user:${userId}")`,
-      `delete("user:${userId}")`,
-      `write("user:${userId}")`,
+      `read("any:${userId}")`,
+      `update("any:${userId}")`,
+      `delete("any:${userId}")`,
+      `write("any:${userId}")`,
     ];
 
     // 🔍 First: Check if this product already exists in the user's cart
@@ -39,10 +39,9 @@ export const addToCart = async ({ userId, product }) => {
         existingItem.$id,
         {
           quantity: existingItem.quantity + 1,
-        },
-        toast.warning("Product is already in cart")
+        }
       );
-
+      toast.warning("Product is already in cart");
       return updated;
     }
 
@@ -73,8 +72,8 @@ export const addToCart = async ({ userId, product }) => {
 
 export const removeFromCart = async (documentId) => {
   try {
-      await databases.deleteDocument(DATABASE_ID, COLLECTION_ID, documentId);
-      toast.error("Item removed from cart")
+    await databases.deleteDocument(DATABASE_ID, COLLECTION_ID, documentId);
+    toast.error("Item removed from cart");
   } catch (error) {
     console.error("Error removing from cart:", error);
     throw error;

@@ -20,6 +20,25 @@ export const fetchDataByCategory = async (category) => {
   }
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // import axios from "axios";
 
 // export const fetchDataByCategory = async (category) => {

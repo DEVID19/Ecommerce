@@ -11,9 +11,11 @@ import {
 import { fetchUserLocation } from "../api/LocationApi";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import CheckoutModal from "../models/CheckOutModel";
 
 const Cart = () => {
   const [location, setLocation] = useState(null);
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const dispatch = useDispatch();
   const { cartItems, totalPrice } = useSelector((state) => state.cart);
   const getLocation = async () => {
@@ -28,6 +30,9 @@ const Cart = () => {
   useEffect(() => {
     getLocation(); // ✅ Works fine now
   }, []);
+  const handleProceedToCheckout = () => {
+    setIsCheckoutModalOpen(true);
+  };
 
   return (
     <div className="max-w-6xl mx-auto mb-5 px-4 md:px-0 mt-10">
@@ -232,7 +237,10 @@ const Cart = () => {
                     </button>
                   </div>
                 </div>
-                <button className="bg-red-500 text-white px-3 py-2 rounded-md w-full cursor-pointer mt-3">
+                <button
+                  className="bg-red-500 text-white px-3 py-2 rounded-md w-full cursor-pointer mt-3"
+                  onClick={handleProceedToCheckout}
+                >
                   Proceed to Checkout
                 </button>
               </div>
@@ -250,6 +258,14 @@ const Cart = () => {
           </button>
         </div>
       )}
+      {/* Checkout Modal */}
+      <CheckoutModal
+        isOpen={isCheckoutModalOpen}
+        onClose={() => setIsCheckoutModalOpen(false)}
+        cartItems={cartItems}
+        totalPrice={totalPrice}
+        location={location}
+      />
     </div>
   );
 };

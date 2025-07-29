@@ -20,7 +20,7 @@ import AdminLogin from "./pages/AdminLogin";
 import { useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { account } from "./appwrite/appwriteClient";
-import { logout, setUser } from "./features/auth/authSlice";
+import { setUser } from "./features/auth/authSlice";
 import { getUserCartItems } from "./features/cart/cartService";
 import { calculateTotal, setCartItems } from "./features/cart/cartSlice";
 
@@ -33,7 +33,7 @@ const AppRoutes = () => {
     const checkSession = async () => {
       try {
         const user = await account.get();
-
+        console.log(user);
         // ✅ Only dispatch real users to Redux
         if (!user.labels?.includes("anonymous")) {
           dispatch(setUser(user));

@@ -95,7 +95,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   // const handleLogin = async () => {
   //   setLoading(true);
   //   setError("");
@@ -123,7 +123,7 @@ export default function Login() {
 
       // 2. Get logged-in user details
       const user = await account.get();
-
+      console.log(user);
       // 3. Dispatch to Redux
       dispatch(setUser(user));
 
@@ -131,7 +131,9 @@ export default function Login() {
       navigate("/");
     } catch (err) {
       if (err.code === 401) {
-        setError("User not found or invalid credentials. Please sign up first.");
+        setError(
+          "User not found or invalid credentials. Please sign up first."
+        );
       } else {
         setError(err.message);
       }

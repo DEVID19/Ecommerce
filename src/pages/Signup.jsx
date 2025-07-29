@@ -116,7 +116,7 @@ const handleSignup = async (e) => {
     await account.createEmailPasswordSession(email, password);
     
     const user = await account.get(); // Get logged-in user details
-
+    console.log(user)
     dispatch(setUser(user)); // 👈 Store user in Redux
     navigate("/");
   } catch (err) {

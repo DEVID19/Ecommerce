@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import { fetchUserLocation } from "../api/LocationApi";
 import { CgClose } from "react-icons/cg";
 

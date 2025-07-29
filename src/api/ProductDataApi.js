@@ -1,4 +1,4 @@
-import { account, databases, Query } from "../appwrite/appwriteClient";
+import { databases, Query } from "../appwrite/appwriteClient";
 
 // export const ensureGuestSession = async () => {
 //   try {

@@ -27,6 +27,27 @@ export const getSingleProduct = async (id) => {
   }
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // import { databases } from "../appwrite/appwriteClient";
 
 // export const getSingleProduct = async (documentId) => {
