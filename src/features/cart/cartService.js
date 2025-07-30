@@ -13,10 +13,10 @@ const COLLECTION_ID = import.meta.env.VITE_APPWRITE_CART_COLLECTION_ID;
 export const addToCart = async ({ userId, product }) => {
   try {
     const permissions = [
-      `read("any:${userId}")`,
-      `update("any:${userId}")`,
-      `delete("any:${userId}")`,
-      `write("any:${userId}")`,
+      `read("user:${userId}")`,
+      `update("user:${userId}")`,
+      `delete("user:${userId}")`,
+      `write("user:${userId}")`,
     ];
 
     // 🔍 First: Check if this product already exists in the user's cart
@@ -80,6 +80,7 @@ export const removeFromCart = async (documentId) => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 export const updateQuantity = async (documentId, newQuantity, unitPrice) => {
   try {
     if (newQuantity < 1) {

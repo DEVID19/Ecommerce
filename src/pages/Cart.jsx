@@ -11,7 +11,8 @@ import {
 import { fetchUserLocation } from "../api/LocationApi";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import CheckoutModal from "../models/CheckOutModel";
+import CheckoutModal from "../models/checkOutModel";
+// import CheckoutModal from "../models/CheckOutModel";
 
 const Cart = () => {
   const [location, setLocation] = useState(null);

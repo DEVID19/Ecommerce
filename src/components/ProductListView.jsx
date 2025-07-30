@@ -7,7 +7,7 @@ const ProductListView = ({ product }) => {
   const dispatch = useDispatch();
 
   const userId = useSelector((state) => state.auth.user?.$id);
-  
+
   return (
     <div className="space-y-4 mt-2 rounded-md">
       <div className="bg-gray-100 flex gap-7 items-center p-2 rounded-md">
