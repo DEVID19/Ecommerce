@@ -24,6 +24,9 @@ export const saveOrderToAppwrite = async (orderData) => {
       ORDERS_COLLECTION_ID,
       ID.unique(),
       {
+        // ✅ Add this line
+        userId: orderData.userId,
+
         // Customer Information
         customerName: orderData.customerInfo.fullName,
         customerEmail: orderData.customerInfo.email,

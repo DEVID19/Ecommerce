@@ -309,21 +309,8 @@ export const getOrdersStats = async () => {
 // Export orders data (for CSV/Excel export)
 export const exportOrdersData = async () => {
   try {
-    const allOrders = await getAllOrders(1000);
-
-    return allOrders.map((order) => ({
-      "Order ID": order.orderId,
-      "Customer Name": order.customer,
-      "Customer Email": order.customerEmail,
-      "Customer Phone": order.customerPhone,
-      "Total Amount": order.totalAmount,
-      "Order Status": order.status,
-      "Payment Status": order.paymentStatus,
-      "Payment Method": order.paymentMethod,
-      "Order Date": new Date(order.createdAt).toLocaleDateString(),
-      "Items Count": order.items.length,
-      "Shipping Address": `${order.shippingAddress.address}, ${order.shippingAddress.state}, ${order.shippingAddress.country}`,
-    }));
+    const allOrders = await getAllOrders(1000); // Get full raw orders
+    return allOrders; // Just return raw orders, not custom keys
   } catch (error) {
     console.error("Error exporting orders data:", error);
     toast.error("Failed to export orders data");

@@ -220,7 +220,14 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Search, Eye, Package, Truck, ShoppingCart, AlertCircle } from "lucide-react";
+import {
+  Search,
+  Eye,
+  Package,
+  Truck,
+  ShoppingCart,
+  AlertCircle,
+} from "lucide-react";
 
 import {
   selectFilters,
@@ -275,7 +282,7 @@ const AdminOrders = () => {
   const handleSearch = (term) => {
     setSearchTerm(term);
     setIsSearching(true);
-    
+
     if (term.trim()) {
       const cleanup = debounceSearch(term.trim());
       return cleanup;
@@ -299,7 +306,7 @@ const AdminOrders = () => {
   const handleStatusFilter = (status) => {
     setStatusFilter(status);
     setSearchTerm(""); // Clear search when filtering
-    
+
     if (status === "all") {
       dispatch(fetchAllOrders());
     } else {
@@ -311,7 +318,7 @@ const AdminOrders = () => {
   const handlePaymentFilter = (paymentStatus) => {
     setPaymentFilter(paymentStatus);
     setSearchTerm(""); // Clear search when filtering
-    
+
     if (paymentStatus === "all") {
       dispatch(fetchAllOrders());
     } else {
@@ -418,15 +425,18 @@ const AdminOrders = () => {
   const NoSearchResultsState = () => (
     <div className="text-center py-12">
       <AlertCircle className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-      <h3 className="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
+      <h3 className="text-lg font-medium text-gray-900 mb-2">
+        No orders found
+      </h3>
       <p className="text-gray-500 mb-6">
-        No orders match your search criteria for "{searchTerm || statusFilter || paymentFilter}".
+        No orders match your search criteria for "
+        {searchTerm || statusFilter || paymentFilter}".
       </p>
       <button
         onClick={() => {
           setSearchTerm("");
-          setStatusFilter("all")
-          setPaymentFilter("all")
+          setStatusFilter("all");
+          setPaymentFilter("all");
           dispatch(fetchAllOrders());
         }}
         className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
@@ -453,7 +463,9 @@ const AdminOrders = () => {
       <div className="p-4 lg:p-6 space-y-6">
         <div className="text-center py-12">
           <AlertCircle className="mx-auto h-16 w-16 text-red-400 mb-4" />
-          <h3 className="text-lg font-medium text-red-900 mb-2">Error loading orders</h3>
+          <h3 className="text-lg font-medium text-red-900 mb-2">
+            Error loading orders
+          </h3>
           <p className="text-red-600 mb-6">{ordersError}</p>
           <button
             onClick={() => dispatch(fetchAllOrders())}
@@ -572,7 +584,7 @@ const AdminOrders = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-6 py-4  text-sm text-gray-600">
                       {order.items && order.items.length > 0
                         ? `${order.items[0].title}${
                             order.items.length > 1
@@ -586,7 +598,9 @@ const AdminOrders = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button
-                        onClick={() => handleStatusToggle(order.id, order.status)}
+                        onClick={() =>
+                          handleStatusToggle(order.id, order.status)
+                        }
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full cursor-pointer hover:opacity-80 transition-opacity ${getStatusColor(
                           order.status
                         )}`}
@@ -624,9 +638,11 @@ const AdminOrders = () => {
               </tbody>
             </table>
           </div>
+        ) : // Show appropriate empty state
+        searchTerm || statusFilter || paymentFilter ? (
+          <NoSearchResultsState />
         ) : (
-          // Show appropriate empty state
-          searchTerm || statusFilter || paymentFilter ? <NoSearchResultsState /> : <EmptyOrdersState />
+          <EmptyOrdersState />
         )}
       </div>
 

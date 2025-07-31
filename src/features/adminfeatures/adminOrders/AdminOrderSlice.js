@@ -11,12 +11,13 @@ import {
   getOrdersStats,
   exportOrdersData,
 } from "./AdminOrderService.js";
+import { exportOrdersToCSV } from "../../../utils/OrderExportCSV.js";
 
 const initialState = {
   // Orders data
   orders: [],
   selectedOrder: null,
-  
+
   // Statistics
   stats: {
     totalOrders: 0,
@@ -54,7 +55,7 @@ const initialState = {
 
   // Error handling
   error: null,
-  
+
   // General status
   status: "idle", // idle | loading | succeeded | failed
 };
@@ -145,9 +146,14 @@ export const fetchOrdersStats = createAsyncThunk(
 // Export orders data
 export const exportOrdersAsync = createAsyncThunk(
   "adminOrders/exportOrders",
-  async () => {
-    const data = await exportOrdersData();
-    return data;
+  async (_, thunkAPI) => {
+    try {
+      const orders = await exportOrdersData();
+      exportOrdersToCSV(orders);
+      return true;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
   }
 );
 
@@ -294,7 +300,7 @@ const adminOrderSlice = createSlice({
       .addCase(deleteOrderAsync.fulfilled, (state, action) => {
         state.updateLoading = false;
         const deletedOrderId = action.payload;
-        
+
         // Remove from orders array
         state.orders = state.orders.filter(
           (order) => order.id !== deletedOrderId

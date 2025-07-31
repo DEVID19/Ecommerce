@@ -4,7 +4,7 @@ import { LuNotebookText } from "react-icons/lu";
 import { MdDeliveryDining } from "react-icons/md";
 import { GiShoppingBag } from "react-icons/gi";
 import { saveOrderToAppwrite } from "../api/orderServices";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { clearCart } from "../features/cart/cartSlice";
 import { toast } from "react-toastify";
 
@@ -15,6 +15,8 @@ const CheckoutModal = ({
   totalPrice,
   location,
 }) => {
+  const { user } = useSelector((state) => state.auth);
+
   const [deliveryInfo, setDeliveryInfo] = useState({
     fullName: "",
     email: "",
@@ -56,6 +58,7 @@ const CheckoutModal = ({
     try {
       // Prepare order data for Appwrite
       const orderData = {
+        userId: user?.$id, // ✅ Add this line
         customerInfo: deliveryInfo,
         items: cartItems.map((item) => ({
           id: item.$id,

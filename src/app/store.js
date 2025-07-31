@@ -5,6 +5,8 @@ import cartReducer from "../features/cart/cartSlice";
 import authReducer from "../features/auth/authSlice";
 import adminDashboardReducer from "../features/adminfeatures/adminDashboard/AdminDashboardSlice";
 import adminOrdersReducer from "../features/adminfeatures/adminOrders/AdminOrderSlice";
+import adminProductReducer from "../features/adminfeatures/adminProducts/AdminProductSlice";
+import adminCustomerReducer from "../features/adminfeatures/adminCustomer/AdminCustomerSlice";
 
 export default configureStore({
   reducer: {
@@ -14,5 +16,7 @@ export default configureStore({
     auth: authReducer,
     adminDashboard: adminDashboardReducer,
     adminOrders: adminOrdersReducer,
+    adminProducts: adminProductReducer,
+    adminCustomers: adminCustomerReducer,
   },
 });
