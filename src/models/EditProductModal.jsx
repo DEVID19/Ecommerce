@@ -34,14 +34,14 @@ const EditProductModal = ({ isOpen, onClose, product }) => {
   const [imageChanged, setImageChanged] = useState(false);
 
   const categories = [
-    "Audio",
-    "Gaming",
-    "Mobile",
-    "TV",
-    "Laptop",
-    "Accessories",
-    "Smart Home",
-    "Wearables",
+    "audio",
+    "gaming",
+    "mobile",
+    "tv",
+    "laptop",
+    "accessories",
+    "smart home",
+    "wearables",
   ];
 
   // Initialize form data when product changes

@@ -289,6 +289,10 @@ export const filterProductsByCategory = async (category, limit = 100) => {
       ]
     );
 
+    // 🔥 Log all categories from the fetched products
+    const allCategories = response.documents.map((p) => p.category);
+    console.log("Unique categories:", [...new Set(allCategories)]);
+
     const products = response.documents.map((product) => ({
       id: product.$id,
       title: product.title || "",
@@ -307,7 +311,7 @@ export const filterProductsByCategory = async (category, limit = 100) => {
       createdAt: product.$createdAt,
       updatedAt: product.$updatedAt,
     }));
-
+    console.log(category);
     return {
       products,
       total: response.total,

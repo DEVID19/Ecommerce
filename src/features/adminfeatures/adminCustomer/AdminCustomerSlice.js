@@ -256,12 +256,15 @@ export const {
 
 // Export selectors
 export const selectCustomers = (state) => state.adminCustomers.customers;
-export const selectSelectedCustomer = (state) => state.adminCustomers.selectedCustomer;
-export const selectCustomersLoading = (state) => state.adminCustomers.customersLoading;
+export const selectSelectedCustomer = (state) =>
+  state.adminCustomers.selectedCustomer;
+export const selectCustomersLoading = (state) =>
+  state.adminCustomers.customersLoading;
 export const selectCustomersError = (state) => state.adminCustomers.error;
 export const selectCustomerStats = (state) => state.adminCustomers.stats;
 export const selectFilters = (state) => state.adminCustomers.filters;
 export const selectPagination = (state) => state.adminCustomers.pagination;
-export const selectIsCustomerModalOpen = (state) => state.adminCustomers.isCustomerModalOpen;
+export const selectIsCustomerModalOpen = (state) =>
+  state.adminCustomers.isCustomerModalOpen;
 
 export default adminCustomerSlice.reducer;

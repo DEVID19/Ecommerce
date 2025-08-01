@@ -53,10 +53,10 @@
 //   );
 // }
 
-import { useState } from "react";
-import { ID } from "appwrite";
+import { useState, useEffect, useRef } from "react";
+import { ID, Query } from "appwrite";
 import { useNavigate } from "react-router-dom";
-import { account } from "../appwrite/appwriteClient";
+import { account, databases } from "../appwrite/appwriteClient";
 import { UserPlus } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { setUser } from "../features/auth/authSlice";
@@ -69,71 +69,190 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const dispatch = useDispatch()
-  // const handleSignup = async (e) => {
-  //   e.preventDefault();
-  //   setLoading(true);
-  //   setError("");
-  //   try {
-  //     // Create a sanitized user ID from name
-  //     const userId = name
-  //       .trim()
-  //       .toLowerCase()
-  //       .replace(/[^a-z0-9._-]/g, "") // only allowed chars
-  //       .slice(0, 36); // Appwrite limit
+  const dispatch = useDispatch();
+  
+  // 🔥 CRITICAL: Prevent duplicate processing
+  const processedRef = useRef(false);
+  const isProcessingRef = useRef(false);
 
-  //     const user = await account.create(
-  //       userId || ID.unique(),
-  //       email,
-  //       password,
-  //       name
-  //     );
+  const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
+  const USERS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_USERS_COLLECTION_ID;
 
-  //     // Auto-login after signup
-  //     await account.createEmailPasswordSession(email, password);
+  // Handle OAuth callback - DUPLICATE PREVENTION VERSION
+  useEffect(() => {
+    const handleOAuthCallback = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
 
-  //     console.log("User created:", user);
-  //     navigate("/");
-  //   } catch (err) {
-  //     console.error(err);
-  //     setError(err?.message || "Signup failed");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-const handleSignup = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError("");
-  try {
-    const userId = name
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9._-]/g, "")
-      .slice(0, 36);
+      // 🔥 STEP 1: Check if already processed or currently processing
+      if (processedRef.current || isProcessingRef.current) {
+        console.log("⚠️ OAuth callback already processed/processing, skipping...");
+        return;
+      }
 
-    await account.create(userId || ID.unique(), email, password, name);
-    await account.createEmailPasswordSession(email, password);
+      if (urlParams.get("oauth_success") === "true") {
+        // 🔥 STEP 2: Mark as processing immediately
+        isProcessingRef.current = true;
+        processedRef.current = true;
+        
+        console.log("🚀 OAuth success detected, processing user...");
+        setLoading(true);
+
+        try {
+          // Wait for session to be fully established
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+
+          const user = await account.get();
+          console.log("📊 Google OAuth user:", user);
+
+          if (!user) {
+            throw new Error("No user session found after OAuth");
+          }
+
+          dispatch(setUser(user));
+
+          // 🔥 STEP 3: Atomic document creation with multiple safeguards
+          let documentCreated = false;
+          let retryCount = 0;
+          const maxRetries = 2;
+
+          while (!documentCreated && retryCount <= maxRetries) {
+            try {
+              console.log(`🔍 Checking for existing user document (attempt ${retryCount + 1})...`);
+              
+              // Check if document exists
+              const existing = await databases.listDocuments(
+                DATABASE_ID,
+                USERS_COLLECTION_ID,
+                [Query.equal("userId", user.$id)]
+              );
+
+              console.log("📋 Existing documents:", existing.total);
+
+              if (existing.total === 0) {
+                console.log("📝 Creating new user document...");
+                
+                // 🔥 Create document with unique timestamp to prevent race conditions
+                const userDoc = await databases.createDocument(
+                  DATABASE_ID,
+                  USERS_COLLECTION_ID,
+                  `${user.$id}_${Date.now()}`, // 🔥 Unique ID based on user ID + timestamp
+                  {
+                    userId: user.$id,
+                    name: user.name || "Google User",
+                    email: user.email || "",
+                    joinedDate: user.$createdAt,
+                  }
+                );
+                
+                console.log("✅ User document created successfully:", userDoc.$id);
+                documentCreated = true;
+              } else {
+                console.log("✅ User document already exists, skipping creation");
+                documentCreated = true;
+              }
+            } catch (docError) {
+              retryCount++;
+              console.log(`❌ Document operation failed (attempt ${retryCount}):`, docError.message);
+              
+              if (retryCount <= maxRetries) {
+                console.log("⏳ Retrying in 1 second...");
+                await new Promise(resolve => setTimeout(resolve, 1000));
+              } else {
+                // Don't throw error for document creation failure, user is still authenticated
+                console.log("⚠️ Document creation failed after retries, but user is authenticated");
+                documentCreated = true; // Stop trying
+              }
+            }
+          }
+
+          // Clean URL and navigate
+          window.history.replaceState({}, document.title, "/signup");
+          console.log("🎯 Navigating to home page...");
+          navigate("/");
+          
+        } catch (err) {
+          console.error("❌ OAuth callback processing failed:", err);
+          setError(`Authentication failed: ${err.message}`);
+          
+          // 🔥 Reset flags on error to allow retry
+          processedRef.current = false;
+          isProcessingRef.current = false;
+        } finally {
+          setLoading(false);
+          isProcessingRef.current = false;
+        }
+      } else if (urlParams.get("oauth_error") === "true") {
+        console.log("❌ OAuth error detected");
+        setError("Google authentication was cancelled or failed");
+        window.history.replaceState({}, document.title, "/signup");
+        
+        // Reset flags on error
+        processedRef.current = false;
+        isProcessingRef.current = false;
+      }
+    };
+
+    handleOAuthCallback();
+  }, [dispatch, navigate, DATABASE_ID, USERS_COLLECTION_ID]);
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
     
-    const user = await account.get(); // Get logged-in user details
-    console.log(user)
-    dispatch(setUser(user)); // 👈 Store user in Redux
-    navigate("/");
-  } catch (err) {
-    console.error(err);
-    setError(err?.message || "Signup failed");
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      const userId = name
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9._-]/g, "")
+        .slice(0, 36);
+
+      await account.create(userId || ID.unique(), email, password, name);
+      await account.createEmailPasswordSession(email, password);
+
+      const user = await account.get();
+      console.log("📧 Email signup user:", user);
+      dispatch(setUser(user));
+
+      await databases.createDocument(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        ID.unique(),
+        {
+          userId: user.$id,
+          name: user.name || "Unknown",
+          email: user.email || "user@gmail.com",
+          joinedDate: user.$createdAt,
+        }
+      );
+
+      console.log("✅ Email signup user document created");
+      navigate("/");
+    } catch (err) {
+      console.error("❌ Email signup error:", err);
+      setError(err?.message || "Signup failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const signupWithGoogle = async () => {
-    account.createOAuth2Session(
-      "google",
-      "http://localhost:5173", // success URL
-      "http://localhost:5173/signup" // failure URL
-    );
-    console.log("success fully signup ");
+    try {
+      console.log("🚀 Starting Google OAuth...");
+      
+      // 🔥 Reset processing flags before new OAuth attempt
+      processedRef.current = false;
+      isProcessingRef.current = false;
+      
+      await account.createOAuth2Session(
+        "google",
+        `${window.location.origin}/signup?oauth_success=true`,
+        `${window.location.origin}/signup?oauth_error=true`
+      );
+    } catch (err) {
+      console.error("❌ Google OAuth initiation failed:", err);
+      setError("Google sign-in failed");
+    }
   };
 
   return (
@@ -227,6 +346,7 @@ const handleSignup = async (e) => {
               <button
                 className="w-full py-2 px-4 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 font-semibold rounded-xl transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 shadow-md"
                 onClick={signupWithGoogle}
+                disabled={loading}
               >
                 <div className="flex items-center justify-center space-x-3">
                   <FcGoogle className="w-5 h-5 mr-2" />

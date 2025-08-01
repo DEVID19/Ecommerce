@@ -1,58 +1,253 @@
-// import { UserButton, useUser } from "@clerk/clerk-react";
-import React from "react";
+// // import { UserButton, useUser } from "@clerk/clerk-react";
+// import React from "react";
+// import { FaUserCircle } from "react-icons/fa";
+// import { Link, NavLink } from "react-router-dom";
+
+// const ResponsiveMenu = ({ openNav, setOpenNav }) => {
+//   // const { user } = useUser();
+//   return (
+//     <div
+//       className={`${
+//         openNav ? "left-0" : "-left-[100%]"
+//       } fixed bottom-0 top-0 z-20 flex h-screen w-[75%] flex-col justify-between bg-white px-8 pb-6 pt-16 text-black md:hidden rounded-r-xl shadow-md transition-all`}
+//     >
+//       <div>
+//         <div className="flex items-center justify-start gap-3">
+//           {/* {user ? <UserButton size={50} /> : <FaUserCircle size={50} />} */}
+//           <div>
+//             <h1>Hello userName </h1>
+//             <h1 className="text-sm text-slate-500">Premium User</h1>
+//           </div>
+//         </div>
+//         <nav className="mt-12">
+//           <ul className="flex flex-col gap-7 text-2xl font-semibold">
+//             <Link
+//               to={"/"}
+//               onClick={() => setOpenNav(false)}
+//               className="cursor-pointer"
+//             >
+//               <li>Home</li>
+//             </Link>
+//             <Link
+//               to={"/products"}
+//               onClick={() => setOpenNav(false)}
+//               className="cursor-pointer"
+//             >
+//               <li>Products</li>
+//             </Link>
+//             <Link
+//               to={"/about"}
+//               onClick={() => setOpenNav(false)}
+//               className="cursor-pointer"
+//             >
+//               <li>About</li>
+//             </Link>
+//             <Link
+//               to={"/contact"}
+//               onClick={() => setOpenNav(false)}
+//               className="cursor-pointer"
+//             >
+//               <li>Contact</li>
+//             </Link>
+//           </ul>
+//         </nav>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default ResponsiveMenu;
+
+import { useState } from "react";
 import { FaUserCircle } from "react-icons/fa";
 import { Link, NavLink } from "react-router-dom";
+import { useSelector } from "react-redux";
+import UserProfileModal from "../models/UserProfileModal";
 
 const ResponsiveMenu = ({ openNav, setOpenNav }) => {
-  // const { user } = useUser();
+  const [showUserModal, setShowUserModal] = useState(false);
+  const { user, isAnonymous, profileImage } = useSelector(
+    (state) => state.auth
+  );
+
+  // Get profile image or fallback to default icon
+  const getProfileDisplay = () => {
+    if (profileImage?.url) {
+      return (
+        <img
+          src={profileImage.url}
+          alt="Profile"
+          className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
+          onError={(e) => {
+            e.target.style.display = "none";
+            e.target.nextSibling.style.display = "block";
+          }}
+        />
+      );
+    }
+    return null;
+  };
+
+  const closeMenu = () => setOpenNav(false);
+
+  const handleProfileClick = () => {
+    if (user && !isAnonymous) {
+      setShowUserModal(true);
+      closeMenu();
+    }
+  };
+
   return (
-    <div
-      className={`${
-        openNav ? "left-0" : "-left-[100%]"
-      } fixed bottom-0 top-0 z-20 flex h-screen w-[75%] flex-col justify-between bg-white px-8 pb-6 pt-16 text-black md:hidden rounded-r-xl shadow-md transition-all`}
-    >
-      <div>
-        <div className="flex items-center justify-start gap-3">
-          {/* {user ? <UserButton size={50} /> : <FaUserCircle size={50} />} */}
-          <div>
-            <h1>Hello userName </h1>
-            <h1 className="text-sm text-slate-500">Premium User</h1>
+    <>
+      <div
+        className={`${
+          openNav ? "left-0" : "-left-[100%]"
+        } fixed bottom-0 top-0 z-20 flex h-screen w-[75%] flex-col justify-between bg-white px-8 pb-6 pt-16 text-black md:hidden rounded-r-xl shadow-md transition-all`}
+      >
+        <div>
+          {/* User Profile Section */}
+          <div
+            className={`flex items-center justify-start gap-3 ${
+              user && !isAnonymous
+                ? "cursor-pointer hover:bg-gray-50 p-3 rounded-lg transition-colors"
+                : ""
+            }`}
+            onClick={handleProfileClick}
+          >
+            {user && !isAnonymous ? (
+              <>
+                {/* Profile Image or Initials */}
+                <div className="relative">
+                  {getProfileDisplay()}
+                  <div
+                    className={`w-12 h-12 bg-red-500 rounded-full flex items-center justify-center text-white font-semibold text-lg border-2 border-gray-200 ${
+                      profileImage?.url ? "hidden" : "block"
+                    }`}
+                  >
+                    {user?.name?.charAt(0).toUpperCase() || "U"}
+                  </div>
+                </div>
+
+                {/* User Info */}
+                <div>
+                  <h1 className="font-semibold text-gray-800">
+                    Hello {user?.name || "User"}
+                  </h1>
+                  <h1 className="text-sm text-slate-500">Premium User</h1>
+                  <p className="text-xs text-red-500 mt-1">
+                    Tap to edit profile
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Default User Icon for unauthenticated users */}
+                <FaUserCircle size={50} className="text-gray-400" />
+                <div>
+                  <h1 className="font-semibold text-gray-600">Hello Guest</h1>
+                  <h1 className="text-sm text-slate-500">
+                    Sign in to continue
+                  </h1>
+                </div>
+              </>
+            )}
           </div>
+
+          {/* Navigation Menu */}
+          <nav className="mt-12">
+            <ul className="flex flex-col gap-7 text-2xl font-semibold">
+              <Link
+                to={"/"}
+                onClick={() => setOpenNav(false)}
+                className="cursor-pointer hover:text-red-500 transition-colors"
+              >
+                <li>Home</li>
+              </Link>
+              <Link
+                to={"/products"}
+                onClick={() => setOpenNav(false)}
+                className="cursor-pointer hover:text-red-500 transition-colors"
+              >
+                <li>Products</li>
+              </Link>
+              <Link
+                to={"/about"}
+                onClick={() => setOpenNav(false)}
+                className="cursor-pointer hover:text-red-500 transition-colors"
+              >
+                <li>About</li>
+              </Link>
+              <Link
+                to={"/contact"}
+                onClick={() => setOpenNav(false)}
+                className="cursor-pointer hover:text-red-500 transition-colors"
+              >
+                <li>Contact</li>
+              </Link>
+
+              {/* Cart Link */}
+              <Link
+                to={"/cart"}
+                onClick={() => setOpenNav(false)}
+                className="cursor-pointer hover:text-red-500 transition-colors"
+              >
+                <li>Cart</li>
+              </Link>
+
+              {/* Conditional Links based on auth status */}
+              {user && !isAnonymous ? (
+                <Link
+                  to={"/orders"}
+                  onClick={() => setOpenNav(false)}
+                  className="cursor-pointer hover:text-red-500 transition-colors"
+                >
+                  <li>My Orders</li>
+                </Link>
+              ) : (
+                <Link
+                  to={"/login"}
+                  onClick={() => setOpenNav(false)}
+                  className="cursor-pointer hover:text-red-500 transition-colors"
+                >
+                  <li>Sign In</li>
+                </Link>
+              )}
+            </ul>
+          </nav>
         </div>
-        <nav className="mt-12">
-          <ul className="flex flex-col gap-7 text-2xl font-semibold">
+
+        {/* Bottom Action Button */}
+        <div className="mt-8">
+          {!user || isAnonymous ? (
             <Link
-              to={"/"}
-              onClick={() => setOpenNav(false)}
-              className="cursor-pointer"
+              to="/login"
+              onClick={closeMenu}
+              className="block w-full py-3 px-4 bg-red-500 text-white text-center font-medium rounded-lg hover:bg-red-600 transition-colors"
             >
-              <li>Home</li>
+              Sign In
             </Link>
-            <Link
-              to={"/products"}
-              onClick={() => setOpenNav(false)}
-              className="cursor-pointer"
-            >
-              <li>Products</li>
-            </Link>
-            <Link
-              to={"/about"}
-              onClick={() => setOpenNav(false)}
-              className="cursor-pointer"
-            >
-              <li>About</li>
-            </Link>
-            <Link
-              to={"/contact"}
-              onClick={() => setOpenNav(false)}
-              className="cursor-pointer"
-            >
-              <li>Contact</li>
-            </Link>
-          </ul>
-        </nav>
+          ) : (
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setShowUserModal(true);
+                  closeMenu();
+                }}
+                className="block w-full py-2 px-4 bg-blue-50 text-blue-600 text-center font-medium rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
+              >
+                Edit Profile
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+
+      {/* User Profile Modal */}
+      <UserProfileModal
+        isOpen={showUserModal}
+        onClose={() => setShowUserModal(false)}
+      />
+    </>
   );
 };
 

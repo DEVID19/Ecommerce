@@ -7,6 +7,7 @@ import adminDashboardReducer from "../features/adminfeatures/adminDashboard/Admi
 import adminOrdersReducer from "../features/adminfeatures/adminOrders/AdminOrderSlice";
 import adminProductReducer from "../features/adminfeatures/adminProducts/AdminProductSlice";
 import adminCustomerReducer from "../features/adminfeatures/adminCustomer/AdminCustomerSlice";
+import adminAnalyticsReducer from "../features/adminfeatures/adminAnalytics/AdminAnalyticsSlice";
 
 export default configureStore({
   reducer: {
@@ -18,5 +19,6 @@ export default configureStore({
     adminOrders: adminOrdersReducer,
     adminProducts: adminProductReducer,
     adminCustomers: adminCustomerReducer,
+    adminAnalytics: adminAnalyticsReducer,
   },
 });

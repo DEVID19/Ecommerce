@@ -182,7 +182,6 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Search, Eye, Mail, Phone, MapPin } from "lucide-react";
 import {
-  selectCustomers,
   fetchAllCustomers,
   searchCustomersAsync,
   openCustomerModal,
@@ -192,6 +191,7 @@ import {
   selectFilters,
   selectCustomersError,
   selectSelectedCustomer,
+  selectCustomers,
 } from "../../features/adminfeatures/adminCustomer/AdminCustomerSlice";
 import CustomerDetailsModal from "../../models/CustomerDetailsModal";
 
@@ -287,13 +287,7 @@ const AdminCustomers = () => {
               className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
             />
           </div>
-          <select className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
-            <option>All Locations</option>
-            <option>New York</option>
-            <option>California</option>
-            <option>Texas</option>
-            <option>Florida</option>
-          </select>
+         
         </div>
       </div>
 
@@ -301,17 +295,18 @@ const AdminCustomers = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredCustomers.map((customer) => (
           <div
-            key={customer.id || customer.userId}
+            key={customer.userId} // Changed from customer.id to customer.userId
             className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center">
                   <span className="text-white font-semibold text-lg">
-                    {customer.name
+                    {(customer.name || "U")
                       .split(" ")
                       .map((n) => n[0])
-                      .join("")}
+                      .join("")
+                      .toUpperCase()}
                   </span>
                 </div>
                 <div>

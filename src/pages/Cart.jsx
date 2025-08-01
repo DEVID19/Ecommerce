@@ -12,6 +12,7 @@ import { fetchUserLocation } from "../api/LocationApi";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import CheckoutModal from "../models/checkOutModel";
+import { Link } from "react-router-dom";
 // import CheckoutModal from "../models/CheckOutModel";
 
 const Cart = () => {
@@ -254,9 +255,11 @@ const Cart = () => {
             Oh no! Your cart is empty
           </h1>
           <img src={emptyCart} alt="" className="w-[400px]" />
-          <button className="bg-red-500 text-white px-3 py-2 rounded-md cursor-pointer ">
-            Continue Shopping
-          </button>
+          <Link to={"/products"}>
+            <button className="bg-red-500 text-white px-3 py-2 rounded-md cursor-pointer ">
+              Continue Shopping
+            </button>
+          </Link>
         </div>
       )}
       {/* Checkout Modal */}

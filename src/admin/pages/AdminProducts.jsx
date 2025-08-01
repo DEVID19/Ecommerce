@@ -435,7 +435,7 @@ const AdminProducts = () => {
             ))}
           </select>
 
-          <select
+          {/* <select
             value={statusFilter}
             onChange={handleStatusChange}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
@@ -444,7 +444,7 @@ const AdminProducts = () => {
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
             <option value="draft">Draft</option>
-          </select>
+          </select> */}
 
           {(searchTerm ||
             categoryFilter !== "all" ||

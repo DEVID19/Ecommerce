@@ -1,3 +1,184 @@
+// import { MapPin } from "lucide-react";
+// import { useEffect, useState } from "react";
+// import { FaCaretDown } from "react-icons/fa";
+// import { IoCartOutline } from "react-icons/io5";
+// import { Link, NavLink } from "react-router-dom";
+// import LocationSelector from "../models/LocationSelector";
+// import { fetchUserLocation } from "../api/LocationApi";
+// import { HiMenuAlt1, HiMenuAlt3 } from "react-icons/hi";
+// import ResponsiveMenu from "./ResponsiveMenu";
+// import { useSelector } from "react-redux";
+// import UserLogout from "../models/UserLogout";
+
+// const Navbar = () => {
+//   const [location, setLocation] = useState(null);
+//   const [openDropdown, setOpenDropdown] = useState(null);
+//   const [openNav, setOpenNav] = useState(false);
+//   const { cartItems } = useSelector((state) => state.cart);
+//     const { user , isAnonymous } = useSelector(
+//      (state) => state.auth
+//   );
+
+//   useEffect(() => {
+//     const getLocation = async () => {
+//       try {
+//         const data = await fetchUserLocation();
+//         setLocation(data);
+//       } catch (error) {
+//         console.log("Loaction error", error);
+//       }
+//     };
+//     getLocation();
+//   }, []);
+
+//   return (
+//     <div className="bg-white py-3 shadow-2xl px-4 md:px-0">
+//       <div className="max-w-6xl  mx-auto flex justify-between items-center ">
+//         {/* logo section  */}
+//         <div className="flex items-center gap-7">
+//           <Link to={"/"}>
+//             <h1 className="font-bold text-3xl">
+//               {" "}
+//               <span className="text-red-500 font-serif">Z</span>aptra
+//             </h1>
+//           </Link>
+
+//           <div className="md:flex gap-1 cursor-pointer text-gray-700 items-center hidden">
+//             <MapPin className="text-red-500 " />
+//             <span className="font-semibold">
+//               {location ? (
+//                 <div className="-space-y-2">
+//                   <p>{location.country}</p>
+//                   <p>{location.state}</p>
+//                 </div>
+//               ) : (
+//                 "Add Address"
+//               )}
+//             </span>
+//             <FaCaretDown onClick={() => setOpenDropdown(!openDropdown)} />
+//           </div>
+//           {openDropdown ? (
+//             <LocationSelector
+//               openDropdown={openDropdown}
+//               setOpenDropdown={setOpenDropdown}
+//               setLocation={setLocation}
+//             />
+//           ) : null}
+//         </div>
+//         {/* menu section */}
+//         <nav className="flex  gap-7  items-center">
+//           <ul className="md:flex gap-7 items-center text-xl  font-semibold hidden">
+//             <NavLink
+//               to={"/"}
+//               className={({ isActive }) =>
+//                 `${
+//                   isActive
+//                     ? "border-b-3 transition-all border-red-500 "
+//                     : "text-black"
+//                 } cursor-pointer`
+//               }
+//             >
+//               <li>Home</li>
+//             </NavLink>
+//             <NavLink
+//               to={"/products"}
+//               className={({ isActive }) =>
+//                 `${
+//                   isActive
+//                     ? "border-b-3 transition-all border-red-500 "
+//                     : "text-black"
+//                 } cursor-pointer`
+//               }
+//             >
+//               <li>Products</li>
+//             </NavLink>
+//             <NavLink
+//               to={"/about"}
+//               className={({ isActive }) =>
+//                 `${
+//                   isActive
+//                     ? "border-b-3 transition-all border-red-500 "
+//                     : "text-black"
+//                 } cursor-pointer`
+//               }
+//             >
+//               <li>About </li>
+//             </NavLink>
+//             <NavLink
+//               to={"/contact"}
+//               className={({ isActive }) =>
+//                 `${
+//                   isActive
+//                     ? "border-b-3 transition-all border-red-500 "
+//                     : "text-black"
+//                 } cursor-pointer`
+//               }
+//             >
+//               <li>Contact</li>
+//             </NavLink>
+//           </ul>
+//           <Link to={"/cart"} className="relative">
+//             <IoCartOutline className="h-7 w-7  " />
+//             <span className="bg-red-500 px-2 rounded-full absolute -top-3  -right-3 text-white ">
+//               {cartItems.length}
+//             </span>
+//           </Link>
+//            <div className="hidden md:block">
+//             {!user || isAnonymous ? (
+//               // Show Sign In button when user is not authenticated
+//               <Link
+//                 to="/login"
+//                 className="bg-red-500 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-red-600 transition-colors duration-200 font-medium"
+//               >
+//                 Sign In
+//               </Link>
+//             ) : (
+//               // Show User Profile when authenticated
+//               <div
+//                 className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200"
+//               >
+//                 <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-semibold text-lg overflow-hidden border-2 border-gray-200">
+//                   <span
+//                     className={`w-full h-full flex items-center justify-center `}
+//                   >
+//                     {user?.name?.charAt(0).toUpperCase() || "U"}
+//                   </span>
+//                 </div>
+//                 <div className="flex flex-col">
+//                   <span className="font-semibold text-gray-800 text-sm">
+//                     {user?.name || "User"}
+//                   </span>
+//                   <span className="text-gray-500 text-xs">
+//                     {user?.email || "user@example.com"}
+//                   </span>
+//                   </div>
+//                    <div >
+//               <UserLogout/>
+//             </div>
+//               </div>
+//             )}
+
+//           </div>
+//           {openNav ? (
+//             <HiMenuAlt3
+//               onClick={() => setOpenNav(false)}
+//               className="h-7 w-7 md:hidden"
+//             />
+//           ) : (
+//             <HiMenuAlt1
+//               onClick={() => setOpenNav(true)}
+//               className="h-7 w-7 md:hidden"
+//             />
+//           )}
+//         </nav>
+//       </div>
+//       <ResponsiveMenu openNav={openNav} setOpenNav={setOpenNav} />
+//     </div>
+//   );
+// };
+
+// export default Navbar;
+
 import { MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { FaCaretDown } from "react-icons/fa";
@@ -8,17 +189,18 @@ import { fetchUserLocation } from "../api/LocationApi";
 import { HiMenuAlt1, HiMenuAlt3 } from "react-icons/hi";
 import ResponsiveMenu from "./ResponsiveMenu";
 import { useSelector } from "react-redux";
-import UserLogout from "../models/UserLogout";
+import UserProfileModal from "../models/UserProfileModal";
 
 const Navbar = () => {
   const [location, setLocation] = useState(null);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [openNav, setOpenNav] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
+
   const { cartItems } = useSelector((state) => state.cart);
-    const { user , isAnonymous } = useSelector(
-     (state) => state.auth
+  const { user, isAnonymous, profileImage } = useSelector(
+    (state) => state.auth
   );
-    
 
   useEffect(() => {
     const getLocation = async () => {
@@ -26,155 +208,185 @@ const Navbar = () => {
         const data = await fetchUserLocation();
         setLocation(data);
       } catch (error) {
-        console.log("Loaction error", error);
+        console.log("Location error", error);
       }
     };
     getLocation();
   }, []);
 
-  return (
-    <div className="bg-white py-3 shadow-2xl px-4 md:px-0">
-      <div className="max-w-6xl  mx-auto flex justify-between items-center ">
-        {/* logo section  */}
-        <div className="flex items-center gap-7">
-          <Link to={"/"}>
-            <h1 className="font-bold text-3xl">
-              {" "}
-              <span className="text-red-500 font-serif">Z</span>aptra
-            </h1>
-          </Link>
+  // Get profile image URL or fallback to user initials
+  const getProfileDisplay = () => {
+    if (profileImage?.url) {
+      return (
+        <img
+          src={profileImage.url}
+          alt="Profile"
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            // If image fails to load, hide it and show initials
+            e.target.style.display = "none";
+            e.target.nextSibling.style.display = "flex";
+          }}
+        />
+      );
+    }
+    return null;
+  };
 
-          <div className="md:flex gap-1 cursor-pointer text-gray-700 items-center hidden">
-            <MapPin className="text-red-500 " />
-            <span className="font-semibold">
-              {location ? (
-                <div className="-space-y-2">
-                  <p>{location.country}</p>
-                  <p>{location.state}</p>
-                </div>
-              ) : (
-                "Add Address"
-              )}
-            </span>
-            <FaCaretDown onClick={() => setOpenDropdown(!openDropdown)} />
-          </div>
-          {openDropdown ? (
-            <LocationSelector
-              openDropdown={openDropdown}
-              setOpenDropdown={setOpenDropdown}
-              setLocation={setLocation}
-            />
-          ) : null}
-        </div>
-        {/* menu section */}
-        <nav className="flex  gap-7  items-center">
-          <ul className="md:flex gap-7 items-center text-xl  font-semibold hidden">
-            <NavLink
-              to={"/"}
-              className={({ isActive }) =>
-                `${
-                  isActive
-                    ? "border-b-3 transition-all border-red-500 "
-                    : "text-black"
-                } cursor-pointer`
-              }
-            >
-              <li>Home</li>
-            </NavLink>
-            <NavLink
-              to={"/products"}
-              className={({ isActive }) =>
-                `${
-                  isActive
-                    ? "border-b-3 transition-all border-red-500 "
-                    : "text-black"
-                } cursor-pointer`
-              }
-            >
-              <li>Products</li>
-            </NavLink>
-            <NavLink
-              to={"/about"}
-              className={({ isActive }) =>
-                `${
-                  isActive
-                    ? "border-b-3 transition-all border-red-500 "
-                    : "text-black"
-                } cursor-pointer`
-              }
-            >
-              <li>About </li>
-            </NavLink>
-            <NavLink
-              to={"/contact"}
-              className={({ isActive }) =>
-                `${
-                  isActive
-                    ? "border-b-3 transition-all border-red-500 "
-                    : "text-black"
-                } cursor-pointer`
-              }
-            >
-              <li>Contact</li>
-            </NavLink>
-          </ul>
-          <Link to={"/cart"} className="relative">
-            <IoCartOutline className="h-7 w-7  " />
-            <span className="bg-red-500 px-2 rounded-full absolute -top-3  -right-3 text-white ">
-              {cartItems.length}
-            </span>
-          </Link>
-           <div className="hidden md:block">
-            {!user || isAnonymous ? (
-              // Show Sign In button when user is not authenticated
-              <Link
-                to="/login"
-                className="bg-red-500 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-red-600 transition-colors duration-200 font-medium"
-              >
-                Sign In
-              </Link>
-            ) : (
-              // Show User Profile when authenticated
-              <div
-                className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200"
-              >
-                <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-semibold text-lg overflow-hidden border-2 border-gray-200">
-                  <span
-                    className={`w-full h-full flex items-center justify-center `}
-                  >
-                    {user?.name?.charAt(0).toUpperCase() || "U"}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-semibold text-gray-800 text-sm">
-                    {user?.name || "User"}
-                  </span>
-                  <span className="text-gray-500 text-xs">
-                    {user?.email || "user@example.com"}
-                  </span>
+  return (
+    <>
+      <div className="bg-white py-3 shadow-2xl px-4 md:px-0">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
+          {/* logo section */}
+          <div className="flex items-center gap-7">
+            <Link to={"/"}>
+              <h1 className="font-bold text-3xl">
+                <span className="text-red-500 font-serif">Z</span>aptra
+              </h1>
+            </Link>
+
+            <div className="md:flex gap-1 cursor-pointer text-gray-700 items-center hidden">
+              <MapPin className="text-red-500" />
+              <span className="font-semibold">
+                {location ? (
+                  <div className="-space-y-2">
+                    <p>{location.country}</p>
+                    <p>{location.state}</p>
                   </div>
-                   <div >
-              <UserLogout/>
+                ) : (
+                  "Add Address"
+                )}
+              </span>
+              <FaCaretDown onClick={() => setOpenDropdown(!openDropdown)} />
             </div>
-              </div>
-            )}
-           
+            {openDropdown ? (
+              <LocationSelector
+                openDropdown={openDropdown}
+                setOpenDropdown={setOpenDropdown}
+                setLocation={setLocation}
+              />
+            ) : null}
           </div>
-          {openNav ? (
-            <HiMenuAlt3
-              onClick={() => setOpenNav(false)}
-              className="h-7 w-7 md:hidden"
-            />
-          ) : (
-            <HiMenuAlt1
-              onClick={() => setOpenNav(true)}
-              className="h-7 w-7 md:hidden"
-            />
-          )}
-        </nav>
+
+          {/* menu section */}
+          <nav className="flex gap-7 items-center">
+            <ul className="md:flex gap-7 items-center text-xl font-semibold hidden">
+              <NavLink
+                to={"/"}
+                className={({ isActive }) =>
+                  `${
+                    isActive
+                      ? "border-b-3 transition-all border-red-500"
+                      : "text-black"
+                  } cursor-pointer`
+                }
+              >
+                <li>Home</li>
+              </NavLink>
+              <NavLink
+                to={"/products"}
+                className={({ isActive }) =>
+                  `${
+                    isActive
+                      ? "border-b-3 transition-all border-red-500"
+                      : "text-black"
+                  } cursor-pointer`
+                }
+              >
+                <li>Products</li>
+              </NavLink>
+              <NavLink
+                to={"/about"}
+                className={({ isActive }) =>
+                  `${
+                    isActive
+                      ? "border-b-3 transition-all border-red-500"
+                      : "text-black"
+                  } cursor-pointer`
+                }
+              >
+                <li>About</li>
+              </NavLink>
+              <NavLink
+                to={"/contact"}
+                className={({ isActive }) =>
+                  `${
+                    isActive
+                      ? "border-b-3 transition-all border-red-500"
+                      : "text-black"
+                  } cursor-pointer`
+                }
+              >
+                <li>Contact</li>
+              </NavLink>
+            </ul>
+
+            <Link to={"/cart"} className="relative">
+              <IoCartOutline className="h-7 w-7" />
+              <span className="bg-red-500 px-2 rounded-full absolute -top-3 -right-3 text-white">
+                {cartItems.length}
+              </span>
+            </Link>
+
+            <div className="hidden md:block">
+              {!user || isAnonymous ? (
+                // Show Sign In button when user is not authenticated
+                <Link
+                  to="/login"
+                  className="bg-red-500 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-red-600 transition-colors duration-200 font-medium"
+                >
+                  Sign In
+                </Link>
+              ) : (
+                // Show User Profile when authenticated
+                <div
+                  onClick={() => setShowUserModal(true)}
+                  className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200"
+                >
+                  <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-semibold text-lg overflow-hidden border-2 border-gray-200 relative">
+                    {getProfileDisplay()}
+                    <span
+                      className={`w-full h-full flex items-center justify-center ${
+                        profileImage?.url ? "hidden" : "flex"
+                      }`}
+                    >
+                      {user?.name?.charAt(0).toUpperCase() || "U"}
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-gray-800 text-sm">
+                      {user?.name || "User"}
+                    </span>
+                    <span className="text-gray-500 text-xs">
+                      {user?.email || "user@example.com"}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {openNav ? (
+              <HiMenuAlt3
+                onClick={() => setOpenNav(false)}
+                className="h-7 w-7 md:hidden"
+              />
+            ) : (
+              <HiMenuAlt1
+                onClick={() => setOpenNav(true)}
+                className="h-7 w-7 md:hidden"
+              />
+            )}
+          </nav>
+        </div>
+        <ResponsiveMenu openNav={openNav} setOpenNav={setOpenNav} />
       </div>
-      <ResponsiveMenu openNav={openNav} setOpenNav={setOpenNav} />
-    </div>
+
+      {/* User Profile Modal */}
+      <UserProfileModal
+        isOpen={showUserModal}
+        onClose={() => setShowUserModal(false)}
+      />
+    </>
   );
 };
 
@@ -231,7 +443,7 @@ export default Navbar;
 //         if (currentUser?.$id) {
 //           try {
 //             const userProfile = await userProfileService.getUserProfile(currentUser.$id);
-            
+
 //             if (userProfile?.profileImageFileId) {
 //               const imageUrl = getFilePreview(userProfile.profileImageFileId, 200, 200, 90);
 //               dispatch(

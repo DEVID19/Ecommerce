@@ -31,14 +31,14 @@ const AddProductModal = ({ isOpen, onClose }) => {
   const [useImageFile, setUseImageFile] = useState(true);
 
   const categories = [
-    "Audio",
-    "Gaming",
-    "Mobile",
-    "TV",
-    "Laptop",
-    "Accessories",
-    "Smart Home",
-    "Wearables",
+    "audio",
+    "gaming",
+    "mobile",
+    "tv",
+    "laptop",
+    "accessories",
+    "smart home",
+    "wearables",
   ];
 
   const handleInputChange = (e) => {
