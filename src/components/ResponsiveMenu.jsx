@@ -58,35 +58,38 @@
 
 // export default ResponsiveMenu;
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaUserCircle } from "react-icons/fa";
 import { Link, NavLink } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import UserProfileModal from "../models/UserProfileModal";
+import { loadUserProfileImage } from "../features/auth/authSlice";
 
 const ResponsiveMenu = ({ openNav, setOpenNav }) => {
+  const dispatch = useDispatch();
   const [showUserModal, setShowUserModal] = useState(false);
-  const { user, isAnonymous, profileImage } = useSelector(
+  const { user, isAnonymous, profileImage, profileImageLoading } = useSelector(
     (state) => state.auth
   );
 
-  // Get profile image or fallback to default icon
-  const getProfileDisplay = () => {
-    if (profileImage?.url) {
-      return (
-        <img
-          src={profileImage.url}
-          alt="Profile"
-          className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
-          onError={(e) => {
-            e.target.style.display = "none";
-            e.target.nextSibling.style.display = "block";
-          }}
-        />
-      );
+  // Debug logs
+  useEffect(() => {
+    console.log("ResponsiveMenu - Profile image state:", profileImage);
+  }, [profileImage]);
+
+  // Load profile image when user is authenticated (same as Navbar)
+  useEffect(() => {
+    if (
+      user &&
+      !isAnonymous &&
+      user.$id &&
+      !profileImage &&
+      !profileImageLoading
+    ) {
+      console.log("ResponsiveMenu: Loading profile image for user:", user.$id);
+      dispatch(loadUserProfileImage(user.$id));
     }
-    return null;
-  };
+  }, [user, isAnonymous, profileImage, profileImageLoading, dispatch]);
 
   const closeMenu = () => setOpenNav(false);
 
@@ -116,13 +119,50 @@ const ResponsiveMenu = ({ openNav, setOpenNav }) => {
           >
             {user && !isAnonymous ? (
               <>
-                {/* Profile Image or Initials */}
-                <div className="relative">
-                  {getProfileDisplay()}
+                {/* Profile Image or Initials - FIXED */}
+                <div className="relative w-12 h-12">
+                  {/* Loading State */}
+                  {profileImageLoading && (
+                    <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center border-2 border-gray-200 absolute inset-0 z-20">
+                      <div className="w-4 h-4 border-2 border-gray-400 border-t-gray-600 rounded-full animate-spin" />
+                    </div>
+                  )}
+
+                  {/* Profile Image - FIXED: Removed cache busting from URL */}
+                  {profileImage?.url && !profileImageLoading && (
+                    <img
+                      key={`responsive-${profileImage.fileId}-${
+                        profileImage.cacheKey || Date.now()
+                      }`}
+                      src={profileImage.url}
+                      alt="Profile"
+                      className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 absolute inset-0 z-10"
+                      onLoad={() => {
+                        console.log(
+                          "ResponsiveMenu: Profile image loaded successfully"
+                        );
+                      }}
+                      onError={(e) => {
+                        console.error(
+                          "ResponsiveMenu: Profile image failed to load:",
+                          e.target.src
+                        );
+                        e.target.style.display = "none";
+                      }}
+                    />
+                  )}
+
+                  {/* Initials Background - Show when no image or loading */}
                   <div
-                    className={`w-12 h-12 bg-red-500 rounded-full flex items-center justify-center text-white font-semibold text-lg border-2 border-gray-200 ${
-                      profileImage?.url ? "hidden" : "block"
+                    className={`w-12 h-12 bg-red-500 rounded-full flex items-center justify-center text-white font-semibold text-lg border-2 border-gray-200 absolute inset-0 ${
+                      profileImage?.url && !profileImageLoading ? "z-0" : "z-10"
                     }`}
+                    style={{
+                      display:
+                        profileImage?.url && !profileImageLoading
+                          ? "none"
+                          : "flex",
+                    }}
                   >
                     {user?.name?.charAt(0).toUpperCase() || "U"}
                   </div>

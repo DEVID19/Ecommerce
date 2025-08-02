@@ -5,11 +5,12 @@ import {
   Camera,
   Edit3,
   Calendar,
-  ShoppingBag,
+  Settings,
   LogOut,
   Save,
   User,
   Mail,
+  Shield,
 } from "lucide-react";
 import {
   account,
@@ -19,25 +20,30 @@ import {
   Query,
 } from "../appwrite/appwriteClient";
 import {
-  clearProfileImage,
+  clearAdminProfileImage,
   logout,
-  setProfileImage,
   updateUserProfile,
-  refreshProfileImage,
+  setAdminProfile,
+  updateAdminProfile,
+  refreshAdminProfileImage,
+  setAdminProfileImage,
 } from "../features/auth/authSlice";
 import { useNavigate } from "react-router-dom";
 
-const UserProfileModal = ({ isOpen, onClose }) => {
+const AdminProfileModal = ({ isOpen, onClose }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
-  const { user, profileImage } = useSelector((state) => state.auth);
+  const { user, adminProfile, adminProfileImage } = useSelector(
+    (state) => state.auth
+  );
 
   // Form states
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    role: "Admin",
   });
 
   // UI states
@@ -46,76 +52,96 @@ const UserProfileModal = ({ isOpen, onClose }) => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [userDetails, setUserDetails] = useState(null);
 
   const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
-  const USERS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_USERS_COLLECTION_ID;
+  const ADMINS_COLLECTION_ID =
+    import.meta.env.VITE_APPWRITE_ADMINS_COLLECTION_ID || "admins";
   const BUCKET_ID = import.meta.env.VITE_APPWRITE_MAIN_BUCKET_ID;
 
   // Debug logs
   useEffect(() => {
-    console.log("Modal - Profile image state:", profileImage);
-  }, [profileImage]);
+    console.log("Admin Modal - Profile image state:", adminProfileImage);
+  }, [adminProfileImage]);
 
-  // Load user data on mount
+  // Load admin data on mount
   useEffect(() => {
     if (isOpen && user) {
       setFormData({
         name: user.name || "",
         email: user.email || "",
+        role: "Admin",
       });
-      fetchUserDetails();
+      fetchAdminDetails();
     }
   }, [isOpen, user]);
 
-  // Fetch user details from database
-  const fetchUserDetails = async () => {
+  // Fetch admin details from database
+  const fetchAdminDetails = async () => {
     if (!user?.$id) return;
 
     try {
       const response = await databases.listDocuments(
         DATABASE_ID,
-        USERS_COLLECTION_ID,
+        ADMINS_COLLECTION_ID,
         [Query.equal("userId", user.$id), Query.limit(1)]
       );
 
       if (response.documents.length > 0) {
-        const userDoc = response.documents[0];
-        setUserDetails(userDoc);
+        const adminDoc = response.documents[0];
+        dispatch(setAdminProfile(adminDoc));
 
         // If profile image exists in database, load it
-        if (userDoc.profileImage && !profileImage) {
+        if (adminDoc.profileImage && !adminProfileImage) {
           try {
             const imageUrl = storage.getFileView(
               BUCKET_ID,
-              userDoc.profileImage
+              adminDoc.profileImage
             );
-
-            // FIX: Properly construct the URL
             const finalImageUrl =
               typeof imageUrl === "string" ? imageUrl : imageUrl.href;
 
-            console.log("Loading existing profile image:", finalImageUrl);
+            console.log("Loading existing admin profile image:", finalImageUrl);
 
             dispatch(
-              setProfileImage({
-                fileId: userDoc.profileImage,
+              setAdminProfileImage({
+                fileId: adminDoc.profileImage,
                 url: finalImageUrl,
-                fileName: "profile-image",
+                fileName: "admin-profile-image",
                 cacheKey: Date.now(),
               })
             );
           } catch (imgError) {
-            console.log("Profile image not found:", imgError);
+            console.log("Admin profile image not found:", imgError);
           }
+        }
+      } else {
+        // Create admin profile if doesn't exist
+        try {
+          const newAdminDoc = await databases.createDocument(
+            DATABASE_ID,
+            ADMINS_COLLECTION_ID,
+            ID.unique(),
+            {
+              userId: user.$id,
+              name: user.name,
+              email: user.email,
+              role: "Admin",
+              joinedDate: new Date().toISOString(),
+              lastLogin: new Date().toISOString(),
+            }
+          );
+          dispatch(setAdminProfile(newAdminDoc));
+          console.log("Created new admin profile:", newAdminDoc);
+        } catch (createError) {
+          console.error("Failed to create admin profile:", createError);
         }
       }
     } catch (err) {
-      console.error("Error fetching user details:", err);
+      console.error("Error fetching admin details:", err);
     }
   };
 
-  // Handle profile image upload - FIXED
+  // Handle profile image upload
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -136,29 +162,29 @@ const UserProfileModal = ({ isOpen, onClose }) => {
 
     try {
       // Delete old profile image if exists
-      if (profileImage?.fileId) {
+      if (adminProfileImage?.fileId) {
         try {
-          await storage.deleteFile(BUCKET_ID, profileImage.fileId);
-          console.log("Old image deleted successfully");
+          await storage.deleteFile(BUCKET_ID, adminProfileImage.fileId);
+          console.log("Old admin image deleted successfully");
         } catch (deleteError) {
-          console.log("Old image deletion failed:", deleteError);
+          console.log("Old admin image deletion failed:", deleteError);
         }
       }
 
       // Upload new image
       const fileId = ID.unique();
-      console.log("Uploading new image with ID:", fileId);
+      console.log("Uploading new admin image with ID:", fileId);
       const uploadedFile = await storage.createFile(BUCKET_ID, fileId, file);
-      console.log("Image uploaded successfully:", uploadedFile);
+      console.log("Admin image uploaded successfully:", uploadedFile);
 
-      // FIX: Get image URL properly
+      // Get image URL properly
       const imageUrlResult = storage.getFileView(BUCKET_ID, uploadedFile.$id);
       const finalImageUrl =
         typeof imageUrlResult === "string"
           ? imageUrlResult
           : imageUrlResult.href;
 
-      console.log("Generated image URL:", finalImageUrl);
+      console.log("Generated admin image URL:", finalImageUrl);
 
       // Update Redux store IMMEDIATELY with proper URL
       const imageData = {
@@ -169,43 +195,24 @@ const UserProfileModal = ({ isOpen, onClose }) => {
         updatedAt: new Date().toISOString(),
       };
 
-      console.log("Dispatching setProfileImage with:", imageData);
-      dispatch(setProfileImage(imageData));
+      console.log("Dispatching setAdminProfileImage with:", imageData);
+      dispatch(setAdminProfileImage(imageData));
 
       // Update database
-      if (userDetails?.$id) {
+      if (adminProfile?.$id) {
         await databases.updateDocument(
           DATABASE_ID,
-          USERS_COLLECTION_ID,
-          userDetails.$id,
+          ADMINS_COLLECTION_ID,
+          adminProfile.$id,
           { profileImage: uploadedFile.$id }
         );
-        console.log("Database updated with new image ID");
-      } else {
-        // Create user document if it doesn't exist
-        try {
-          await databases.createDocument(
-            DATABASE_ID,
-            USERS_COLLECTION_ID,
-            ID.unique(),
-            {
-              userId: user.$id,
-              name: user.name,
-              email: user.email,
-              profileImage: uploadedFile.$id,
-              joinedDate: new Date().toISOString(),
-            }
-          );
-          console.log("Created new user document with profile image");
-        } catch (createError) {
-          console.error("Failed to create user document:", createError);
-        }
+        console.log("Admin database updated with new image ID");
       }
 
-      setSuccess("Profile image updated successfully!");
+      setSuccess("Admin profile image updated successfully!");
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      console.error("Image upload failed:", err);
+      console.error("Admin image upload failed:", err);
       setError("Failed to upload image. Please try again.");
     } finally {
       setUploadingImage(false);
@@ -229,17 +236,19 @@ const UserProfileModal = ({ isOpen, onClose }) => {
         await account.updateName(formData.name);
       }
 
-      // Update database
-      if (userDetails?.$id) {
-        await databases.updateDocument(
+      // Update admin database
+      if (adminProfile?.$id) {
+        const updatedDoc = await databases.updateDocument(
           DATABASE_ID,
-          USERS_COLLECTION_ID,
-          userDetails.$id,
+          ADMINS_COLLECTION_ID,
+          adminProfile.$id,
           {
             name: formData.name,
             email: formData.email,
+            lastUpdated: new Date().toISOString(),
           }
         );
+        dispatch(updateAdminProfile(updatedDoc));
       }
 
       // Update Redux store
@@ -250,11 +259,11 @@ const UserProfileModal = ({ isOpen, onClose }) => {
         })
       );
 
-      setSuccess("Profile updated successfully!");
+      setSuccess("Admin profile updated successfully!");
       setIsEditing(false);
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      console.error("Profile update failed:", err);
+      console.error("Admin profile update failed:", err);
       setError("Failed to update profile. Please try again.");
     } finally {
       setLoading(false);
@@ -267,9 +276,9 @@ const UserProfileModal = ({ isOpen, onClose }) => {
       await account.deleteSession("current");
       dispatch(logout());
       onClose();
-      navigate("/");
+      navigate("/admin/login");
     } catch (err) {
-      console.error("Logout failed:", err);
+      console.error("Admin logout failed:", err);
     }
   };
 
@@ -291,7 +300,10 @@ const UserProfileModal = ({ isOpen, onClose }) => {
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-800">My Profile</h2>
+            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <Shield className="w-5 h-5 text-red-500" />
+              Admin Profile
+            </h2>
             <button
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -316,25 +328,27 @@ const UserProfileModal = ({ isOpen, onClose }) => {
             </div>
           )}
 
-          {/* Profile Image Section - FIXED */}
+          {/* Profile Image Section */}
           <div className="flex flex-col items-center space-y-4">
             <div className="relative">
               <div className="w-24 h-24 rounded-full overflow-hidden bg-red-500 flex items-center justify-center shadow-lg border-4 border-white relative">
                 {/* Profile Image with enhanced key and cache busting */}
-                {profileImage?.url && (
+                {adminProfileImage?.url && (
                   <img
-                    key={`modal-${profileImage.fileId}-${
-                      profileImage.cacheKey || Date.now()
+                    key={`admin-modal-${adminProfileImage.fileId}-${
+                      adminProfileImage.cacheKey || Date.now()
                     }`}
-                    src={profileImage.url}
-                    alt="Profile"
+                    src={adminProfileImage.url}
+                    alt="Admin Profile"
                     className="w-full h-full object-cover absolute inset-0 z-10"
                     onLoad={() => {
-                      console.log("Modal: Profile image loaded successfully");
+                      console.log(
+                        "Admin Modal: Profile image loaded successfully"
+                      );
                     }}
                     onError={(e) => {
                       console.error(
-                        "Modal: Profile image failed to load:",
+                        "Admin Modal: Profile image failed to load:",
                         e.target.src
                       );
                       e.target.style.display = "none";
@@ -345,13 +359,13 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                 {/* Initials */}
                 <div
                   className={`w-full h-full flex items-center justify-center text-white text-2xl font-bold absolute inset-0 ${
-                    profileImage?.url ? "z-0" : "z-10"
+                    adminProfileImage?.url ? "z-0" : "z-10"
                   }`}
                   style={{
-                    display: profileImage?.url ? "none" : "flex",
+                    display: adminProfileImage?.url ? "none" : "flex",
                   }}
                 >
-                  {user?.name?.charAt(0).toUpperCase() || "U"}
+                  {user?.name?.charAt(0).toUpperCase() || "A"}
                 </div>
               </div>
 
@@ -378,7 +392,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-          {/* User Information Form */}
+          {/* Admin Information Form */}
           <form onSubmit={handleUpdateProfile} className="space-y-4">
             {/* Name Field */}
             <div>
@@ -420,14 +434,25 @@ const UserProfileModal = ({ isOpen, onClose }) => {
               </p>
             </div>
 
+            {/* Role Field */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Shield className="w-4 h-4 inline mr-2" />
+                Role
+              </label>
+              <div className="px-4 py-3 border border-gray-200 rounded-lg bg-red-50 text-red-600 font-semibold">
+                {formData.role}
+              </div>
+            </div>
+
             {/* Joined Date */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Calendar className="w-4 h-4 inline mr-2" />
-                Member Since
+                Admin Since
               </label>
               <div className="px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-600">
-                {formatDate(userDetails?.joinedDate || user?.$createdAt)}
+                {formatDate(adminProfile?.joinedDate || user?.$createdAt)}
               </div>
             </div>
 
@@ -451,6 +476,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                       setFormData({
                         name: user?.name || "",
                         email: user?.email || "",
+                        role: "Admin",
                       });
                       setError("");
                     }}
@@ -477,16 +503,16 @@ const UserProfileModal = ({ isOpen, onClose }) => {
 
           {/* Additional Actions */}
           <div className="border-t border-gray-200 pt-6 space-y-3">
-            {/* Orders Button */}
+            {/* Admin Settings Button */}
             <button
               onClick={() => {
-                navigate("/orders");
+                navigate("/admin/settings");
                 onClose();
               }}
               className="w-full py-3 px-4 bg-blue-50 hover:bg-blue-100 text-blue-600 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 border border-blue-200"
             >
-              <ShoppingBag className="w-4 h-4" />
-              My Orders
+              <Settings className="w-4 h-4" />
+              Admin Settings
             </button>
 
             {/* Logout Button */}
@@ -504,4 +530,4 @@ const UserProfileModal = ({ isOpen, onClose }) => {
   );
 };
 
-export default UserProfileModal;
+export default AdminProfileModal;

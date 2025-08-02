@@ -4,6 +4,7 @@ import Products from "./pages/Products";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Cart from "./pages/Cart";
+import Orders from "./pages/Orders";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import SingleProduct from "./pages/SingleProduct";
@@ -20,7 +21,7 @@ import AdminLogin from "./pages/AdminLogin";
 import { useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { account } from "./appwrite/appwriteClient";
-import { setUser } from "./features/auth/authSlice";
+import { loadUserProfileImage, setUser } from "./features/auth/authSlice";
 import { getUserCartItems } from "./features/cart/cartService";
 import { calculateTotal, setCartItems } from "./features/cart/cartSlice";
 
@@ -34,9 +35,13 @@ const AppRoutes = () => {
       try {
         const user = await account.get();
         console.log(user);
+
         // ✅ Only dispatch real users to Redux
         if (!user.labels?.includes("anonymous")) {
           dispatch(setUser(user));
+
+          // ✅ Load profile image immediately after setting user
+          dispatch(loadUserProfileImage(user.$id));
 
           // ✅ Fetch and set cart items
           const items = await getUserCartItems(user.$id);
@@ -70,6 +75,7 @@ const AppRoutes = () => {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/orders" element={<Orders />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/admin-login" element={<AdminLogin />} />

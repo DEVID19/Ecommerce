@@ -118,3 +118,29 @@ export const getUserCartItems = async (userId) => {
     throw error;
   }
 };
+
+export const clearUserCart = async (userId) => {
+  try {
+    // First, get all cart items for the user
+    const userCartItems = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTION_ID,
+      [Query.equal("userId", [userId])]
+    );
+
+    // Delete each cart item
+    const deletePromises = userCartItems.documents.map((item) =>
+      databases.deleteDocument(DATABASE_ID, COLLECTION_ID, item.$id)
+    );
+
+    await Promise.all(deletePromises);
+
+    console.log(
+      `Cleared ${userCartItems.documents.length} items from user's cart`
+    );
+    return true;
+  } catch (error) {
+    console.error("Error clearing user cart:", error);
+    throw error;
+  }
+};

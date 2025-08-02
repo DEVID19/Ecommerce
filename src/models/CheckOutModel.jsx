@@ -7,6 +7,7 @@ import { saveOrderToAppwrite } from "../api/orderServices";
 import { useDispatch, useSelector } from "react-redux";
 import { clearCart } from "../features/cart/cartSlice";
 import { toast } from "react-toastify";
+import { clearUserCart } from "../features/cart/cartService";
 
 const CheckoutModal = ({
   isOpen,
@@ -80,9 +81,15 @@ const CheckoutModal = ({
       };
 
       console.log("Order Data to be sent to Appwrite:", orderData);
-      dispatch(clearCart());
+
       // Save order to Appwrite
       await saveOrderToAppwrite(orderData);
+
+      // 🔥 NEW: Clear cart items from database after successful order placement
+      await clearUserCart(user?.$id);
+
+      // Clear cart from Redux state
+      dispatch(clearCart());
 
       toast.success(
         "Your order has been placed! Thanks for shopping with us. 🎉",

@@ -188,19 +188,41 @@ import LocationSelector from "../models/LocationSelector";
 import { fetchUserLocation } from "../api/LocationApi";
 import { HiMenuAlt1, HiMenuAlt3 } from "react-icons/hi";
 import ResponsiveMenu from "./ResponsiveMenu";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import UserProfileModal from "../models/UserProfileModal";
+import { loadUserProfileImage } from "../features/auth/authSlice";
 
 const Navbar = () => {
+  const dispatch = useDispatch();
   const [location, setLocation] = useState(null);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [openNav, setOpenNav] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
 
   const { cartItems } = useSelector((state) => state.cart);
-  const { user, isAnonymous, profileImage } = useSelector(
+  const { user, isAnonymous, profileImage, profileImageLoading } = useSelector(
     (state) => state.auth
   );
+
+  // Debug logs
+  useEffect(() => {
+    console.log("Navbar - Profile image state:", profileImage);
+    console.log("Navbar - User state:", user);
+  }, [profileImage, user]);
+
+  // Load profile image when user is authenticated - FIXED to prevent unnecessary loading
+  useEffect(() => {
+    if (
+      user &&
+      !isAnonymous &&
+      user.$id &&
+      !profileImage &&
+      !profileImageLoading
+    ) {
+      console.log("Loading profile image for user:", user.$id);
+      dispatch(loadUserProfileImage(user.$id));
+    }
+  }, [user?.$id, isAnonymous, dispatch]); // Removed profileImage and profileImageLoading from dependencies
 
   useEffect(() => {
     const getLocation = async () => {
@@ -213,25 +235,6 @@ const Navbar = () => {
     };
     getLocation();
   }, []);
-
-  // Get profile image URL or fallback to user initials
-  const getProfileDisplay = () => {
-    if (profileImage?.url) {
-      return (
-        <img
-          src={profileImage.url}
-          alt="Profile"
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            // If image fails to load, hide it and show initials
-            e.target.style.display = "none";
-            e.target.nextSibling.style.display = "flex";
-          }}
-        />
-      );
-    }
-    return null;
-  };
 
   return (
     <>
@@ -338,28 +341,82 @@ const Navbar = () => {
                   Sign In
                 </Link>
               ) : (
-                // Show User Profile when authenticated
+                // Show User Profile when authenticated - ENHANCED STYLING
                 <div
                   onClick={() => setShowUserModal(true)}
-                  className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200"
+                  className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 px-3 py-2 rounded-xl transition-all duration-300 hover:shadow-sm group"
                 >
-                  <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-semibold text-lg overflow-hidden border-2 border-gray-200 relative">
-                    {getProfileDisplay()}
-                    <span
-                      className={`w-full h-full flex items-center justify-center ${
-                        profileImage?.url ? "hidden" : "flex"
-                      }`}
-                    >
-                      {user?.name?.charAt(0).toUpperCase() || "U"}
-                    </span>
+                  {/* Enhanced Profile Avatar - Made Bigger */}
+                  <div className="relative">
+                    <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center text-white font-bold text-xl overflow-hidden shadow-lg ring-2 ring-white ring-offset-2 ring-offset-gray-50 transition-all duration-300 group-hover:ring-red-400 group-hover:shadow-xl relative">
+                      {/* Profile Image with enhanced styling */}
+                      {profileImage?.url && (
+                        <img
+                          key={`navbar-${profileImage.fileId}-${
+                            profileImage.cacheKey || Date.now()
+                          }`}
+                          src={profileImage.url}
+                          alt="Profile"
+                          className="w-full h-full object-cover object-center absolute inset-0 z-10 transition-all duration-300 group-hover:scale-105"
+                          onLoad={() => {
+                            console.log(
+                              "Navbar: Profile image loaded successfully"
+                            );
+                          }}
+                          onError={(e) => {
+                            console.error(
+                              "Navbar: Profile image failed to load:",
+                              e.target.src
+                            );
+                            e.target.style.display = "none";
+                          }}
+                        />
+                      )}
+
+                      {/* Initials with enhanced styling */}
+                      <span
+                        className={`w-full h-full flex items-center justify-center absolute inset-0 bg-gradient-to-br from-red-500 to-red-600 text-white font-bold transition-all duration-300 ${
+                          profileImage?.url
+                            ? "z-0 opacity-0"
+                            : "z-10 opacity-100"
+                        }`}
+                      >
+                        {user?.name?.charAt(0).toUpperCase() || "U"}
+                      </span>
+
+                      {/* Online indicator */}
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
+                    </div>
+
+                    {/* Subtle glow effect on hover */}
+                    <div className="absolute inset-0 rounded-full bg-red-500 opacity-0 group-hover:opacity-20 blur-md transition-opacity duration-300 -z-10"></div>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-gray-800 text-sm">
+
+                  {/* User info with enhanced typography */}
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-semibold text-gray-900 text-sm truncate group-hover:text-red-600 transition-colors duration-200">
                       {user?.name || "User"}
                     </span>
-                    <span className="text-gray-500 text-xs">
+                    <span className="text-gray-500 text-xs truncate">
                       {user?.email || "user@example.com"}
                     </span>
+                  </div>
+
+                  {/* Subtle arrow indicator */}
+                  <div className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <svg
+                      className="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
                   </div>
                 </div>
               )}
