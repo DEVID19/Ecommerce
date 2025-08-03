@@ -82,7 +82,7 @@ import {
 import { NavLink } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
-import { loadAdminProfileImage } from "../../features/auth/authSlice";
+import { loadAdminData } from "../../features/auth/authSlice"; // ✅ Fixed: Use loadAdminData instead
 import AdminProfileModal from "../../models/AdminProfileModal";
 
 const menuItems = [
@@ -101,16 +101,17 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
   const [showProfileModal, setShowProfileModal] = useState(false);
 
   const dispatch = useDispatch();
-  const { user, isAdmin, adminProfileImage } = useSelector(
+  const { user, isAdmin, adminProfileImage, adminProfile } = useSelector(
     (state) => state.auth
   );
 
-  // Load admin profile image when component mounts
+  // ✅ Load admin data (including profile image) when component mounts or user changes
   useEffect(() => {
-    if (isAdmin && user?.$id && !adminProfileImage) {
-      dispatch(loadAdminProfileImage(user.$id));
+    if (isAdmin && user?.$id && !adminProfile) {
+      console.log("Sidebar: Loading admin data for:", user.$id);
+      dispatch(loadAdminData(user.$id));
     }
-  }, [isAdmin, user?.$id, adminProfileImage, dispatch]);
+  }, [isAdmin, user?.$id, adminProfile, dispatch]);
 
   const getInitials = (name) => {
     if (!name) return "A";
@@ -126,6 +127,9 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
     setShowProfileModal(true);
     toggleSidebar(); // Close sidebar after clicking
   };
+
+  // ✅ Get display name from adminProfile or fallback to user.name
+  const displayName = adminProfile?.name || user?.name || "Admin User";
 
   return (
     <>
@@ -172,14 +176,14 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
                     }}
                   />
                 ) : (
-                  <span className="text-sm">{getInitials(user.name)}</span>
+                  <span className="text-sm">{getInitials(displayName)}</span>
                 )}
               </div>
 
               {/* User Info */}
               <div className="text-left flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-800 truncate">
-                  {user.name || "Admin User"}
+                  {displayName}
                 </p>
                 <p className="text-xs text-gray-500">Administrator</p>
               </div>

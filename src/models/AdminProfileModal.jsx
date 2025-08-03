@@ -20,13 +20,12 @@ import {
   Query,
 } from "../appwrite/appwriteClient";
 import {
-  clearAdminProfileImage,
   logout,
   updateUserProfile,
   setAdminProfile,
   updateAdminProfile,
-  refreshAdminProfileImage,
   setAdminProfileImage,
+  loadAdminData,
 } from "../features/auth/authSlice";
 import { useNavigate } from "react-router-dom";
 
@@ -35,9 +34,8 @@ const AdminProfileModal = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
-  const { user, adminProfile, adminProfileImage } = useSelector(
-    (state) => state.auth
-  );
+  const { user, adminProfile, adminProfileImage, adminDataLoading } =
+    useSelector((state) => state.auth);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -61,87 +59,67 @@ const AdminProfileModal = ({ isOpen, onClose }) => {
   // Debug logs
   useEffect(() => {
     console.log("Admin Modal - Profile image state:", adminProfileImage);
-  }, [adminProfileImage]);
+    console.log("Admin Modal - Admin profile state:", adminProfile);
+    console.log("Admin Modal - Data loading:", adminDataLoading);
+  }, [adminProfileImage, adminProfile, adminDataLoading]);
 
-  // Load admin data on mount
+  // ✅ FIXED: Only use attributes that exist in your collection schema
+  const createAdminProfile = async () => {
+    if (!user?.$id) return null;
+
+    try {
+      console.log("🔄 Creating admin profile from modal...");
+      const newAdminDoc = await databases.createDocument(
+        DATABASE_ID,
+        ADMINS_COLLECTION_ID,
+        ID.unique(),
+        {
+          userId: user.$id,
+          name: user.name || "Admin User",
+          email: user.email,
+          role: "Admin",
+          joinedDate: new Date().toISOString(),
+          // Only use attributes that exist in your schema
+          // Removed lastLogin, lastUpdated as they don't exist
+        }
+      );
+
+      console.log("✅ Admin profile created successfully:", newAdminDoc);
+      dispatch(setAdminProfile(newAdminDoc));
+      return newAdminDoc;
+    } catch (createError) {
+      console.error("❌ Failed to create admin profile:", createError);
+      throw createError;
+    }
+  };
+
+  // Load admin data on modal open
   useEffect(() => {
     if (isOpen && user) {
+      // Set form data from user first
       setFormData({
         name: user.name || "",
         email: user.email || "",
         role: "Admin",
       });
-      fetchAdminDetails();
-    }
-  }, [isOpen, user]);
 
-  // Fetch admin details from database
-  const fetchAdminDetails = async () => {
-    if (!user?.$id) return;
-
-    try {
-      const response = await databases.listDocuments(
-        DATABASE_ID,
-        ADMINS_COLLECTION_ID,
-        [Query.equal("userId", user.$id), Query.limit(1)]
-      );
-
-      if (response.documents.length > 0) {
-        const adminDoc = response.documents[0];
-        dispatch(setAdminProfile(adminDoc));
-
-        // If profile image exists in database, load it
-        if (adminDoc.profileImage && !adminProfileImage) {
-          try {
-            const imageUrl = storage.getFileView(
-              BUCKET_ID,
-              adminDoc.profileImage
-            );
-            const finalImageUrl =
-              typeof imageUrl === "string" ? imageUrl : imageUrl.href;
-
-            console.log("Loading existing admin profile image:", finalImageUrl);
-
-            dispatch(
-              setAdminProfileImage({
-                fileId: adminDoc.profileImage,
-                url: finalImageUrl,
-                fileName: "admin-profile-image",
-                cacheKey: Date.now(),
-              })
-            );
-          } catch (imgError) {
-            console.log("Admin profile image not found:", imgError);
-          }
-        }
-      } else {
-        // Create admin profile if doesn't exist
-        try {
-          const newAdminDoc = await databases.createDocument(
-            DATABASE_ID,
-            ADMINS_COLLECTION_ID,
-            ID.unique(),
-            {
-              userId: user.$id,
-              name: user.name,
-              email: user.email,
-              role: "Admin",
-              joinedDate: new Date().toISOString(),
-              lastLogin: new Date().toISOString(),
-            }
-          );
-          dispatch(setAdminProfile(newAdminDoc));
-          console.log("Created new admin profile:", newAdminDoc);
-        } catch (createError) {
-          console.error("Failed to create admin profile:", createError);
-        }
+      // Load admin data if not already loading and not available
+      if (!adminProfile && !adminDataLoading) {
+        console.log("🔄 Admin data not found, loading from database...");
+        dispatch(loadAdminData(user.$id));
+      } else if (adminProfile) {
+        console.log("✅ Admin data already available:", adminProfile);
+        // Update form with admin profile data
+        setFormData({
+          name: adminProfile.name || user.name || "",
+          email: adminProfile.email || user.email || "",
+          role: "Admin",
+        });
       }
-    } catch (err) {
-      console.error("Error fetching admin details:", err);
     }
-  };
+  }, [isOpen, user, adminProfile, adminDataLoading, dispatch]);
 
-  // Handle profile image upload
+  // ✅ Improved image upload with better error handling
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -161,21 +139,28 @@ const AdminProfileModal = ({ isOpen, onClose }) => {
     setError("");
 
     try {
+      // Ensure we have admin profile
+      let currentAdminProfile = adminProfile;
+      if (!currentAdminProfile) {
+        console.log("⚠️ No admin profile found, creating one...");
+        currentAdminProfile = await createAdminProfile();
+      }
+
       // Delete old profile image if exists
       if (adminProfileImage?.fileId) {
         try {
           await storage.deleteFile(BUCKET_ID, adminProfileImage.fileId);
-          console.log("Old admin image deleted successfully");
+          console.log("✅ Old admin image deleted successfully");
         } catch (deleteError) {
-          console.log("Old admin image deletion failed:", deleteError);
+          console.log("⚠️ Old admin image deletion failed:", deleteError);
         }
       }
 
       // Upload new image
       const fileId = ID.unique();
-      console.log("Uploading new admin image with ID:", fileId);
+      console.log("🔄 Uploading new admin image with ID:", fileId);
       const uploadedFile = await storage.createFile(BUCKET_ID, fileId, file);
-      console.log("Admin image uploaded successfully:", uploadedFile);
+      console.log("✅ Admin image uploaded successfully:", uploadedFile);
 
       // Get image URL properly
       const imageUrlResult = storage.getFileView(BUCKET_ID, uploadedFile.$id);
@@ -184,9 +169,9 @@ const AdminProfileModal = ({ isOpen, onClose }) => {
           ? imageUrlResult
           : imageUrlResult.href;
 
-      console.log("Generated admin image URL:", finalImageUrl);
+      console.log("✅ Generated admin image URL:", finalImageUrl);
 
-      // Update Redux store IMMEDIATELY with proper URL
+      // Update Redux store IMMEDIATELY
       const imageData = {
         fileId: uploadedFile.$id,
         url: finalImageUrl,
@@ -195,31 +180,39 @@ const AdminProfileModal = ({ isOpen, onClose }) => {
         updatedAt: new Date().toISOString(),
       };
 
-      console.log("Dispatching setAdminProfileImage with:", imageData);
+      console.log("🔄 Dispatching setAdminProfileImage with:", imageData);
       dispatch(setAdminProfileImage(imageData));
 
-      // Update database
-      if (adminProfile?.$id) {
-        await databases.updateDocument(
-          DATABASE_ID,
-          ADMINS_COLLECTION_ID,
-          adminProfile.$id,
-          { profileImage: uploadedFile.$id }
-        );
-        console.log("Admin database updated with new image ID");
+      // ✅ FIXED: Update database with correct attribute name
+      if (currentAdminProfile?.$id) {
+        try {
+          await databases.updateDocument(
+            DATABASE_ID,
+            ADMINS_COLLECTION_ID,
+            currentAdminProfile.$id,
+            { profileImage: uploadedFile.$id }
+          );
+          console.log("✅ Admin database updated with new image ID");
+        } catch (updateError) {
+          console.log(
+            "⚠️ Database update failed, but image uploaded:",
+            updateError
+          );
+          // Don't throw error here as image is already uploaded and in Redux
+        }
       }
 
       setSuccess("Admin profile image updated successfully!");
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      console.error("Admin image upload failed:", err);
+      console.error("❌ Admin image upload failed:", err);
       setError("Failed to upload image. Please try again.");
     } finally {
       setUploadingImage(false);
     }
   };
 
-  // Handle form submission
+  // ✅ FIXED: Profile update with only existing attributes
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) {
@@ -231,24 +224,38 @@ const AdminProfileModal = ({ isOpen, onClose }) => {
     setError("");
 
     try {
+      // Ensure we have admin profile
+      let currentAdminProfile = adminProfile;
+      if (!currentAdminProfile) {
+        console.log("⚠️ No admin profile found, creating one...");
+        currentAdminProfile = await createAdminProfile();
+      }
+
       // Update Appwrite account
       if (formData.name !== user.name) {
         await account.updateName(formData.name);
       }
 
-      // Update admin database
-      if (adminProfile?.$id) {
-        const updatedDoc = await databases.updateDocument(
-          DATABASE_ID,
-          ADMINS_COLLECTION_ID,
-          adminProfile.$id,
-          {
-            name: formData.name,
-            email: formData.email,
-            lastUpdated: new Date().toISOString(),
-          }
-        );
-        dispatch(updateAdminProfile(updatedDoc));
+      // ✅ FIXED: Update admin database with only existing attributes
+      if (currentAdminProfile?.$id) {
+        try {
+          const updatedDoc = await databases.updateDocument(
+            DATABASE_ID,
+            ADMINS_COLLECTION_ID,
+            currentAdminProfile.$id,
+            {
+              name: formData.name,
+              email: formData.email,
+              // Only use attributes that exist in your schema
+              // Removed lastUpdated as it doesn't exist
+            }
+          );
+          dispatch(updateAdminProfile(updatedDoc));
+          console.log("✅ Admin profile updated in database");
+        } catch (updateError) {
+          console.log("⚠️ Database update failed:", updateError);
+          // Continue with Redux update even if database update fails
+        }
       }
 
       // Update Redux store
@@ -263,7 +270,7 @@ const AdminProfileModal = ({ isOpen, onClose }) => {
       setIsEditing(false);
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      console.error("Admin profile update failed:", err);
+      console.error("❌ Admin profile update failed:", err);
       setError("Failed to update profile. Please try again.");
     } finally {
       setLoading(false);
@@ -276,7 +283,7 @@ const AdminProfileModal = ({ isOpen, onClose }) => {
       await account.deleteSession("current");
       dispatch(logout());
       onClose();
-      navigate("/admin/login");
+      navigate("/admin-login");
     } catch (err) {
       console.error("Admin logout failed:", err);
     }
@@ -315,6 +322,14 @@ const AdminProfileModal = ({ isOpen, onClose }) => {
 
         {/* Content */}
         <div className="p-6 space-y-6">
+          {/* Loading indicator */}
+          {adminDataLoading && (
+            <div className="flex items-center justify-center py-4">
+              <div className="w-6 h-6 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+              <span className="ml-2 text-gray-600">Loading admin data...</span>
+            </div>
+          )}
+
           {/* Error/Success Messages */}
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -332,23 +347,25 @@ const AdminProfileModal = ({ isOpen, onClose }) => {
           <div className="flex flex-col items-center space-y-4">
             <div className="relative">
               <div className="w-24 h-24 rounded-full overflow-hidden bg-red-500 flex items-center justify-center shadow-lg border-4 border-white relative">
-                {/* Profile Image with enhanced key and cache busting */}
+                {/* Profile Image with cache busting */}
                 {adminProfileImage?.url && (
                   <img
                     key={`admin-modal-${adminProfileImage.fileId}-${
                       adminProfileImage.cacheKey || Date.now()
                     }`}
-                    src={adminProfileImage.url}
+                    src={`${adminProfileImage.url}?v=${
+                      adminProfileImage.cacheKey || Date.now()
+                    }`}
                     alt="Admin Profile"
                     className="w-full h-full object-cover absolute inset-0 z-10"
                     onLoad={() => {
                       console.log(
-                        "Admin Modal: Profile image loaded successfully"
+                        "✅ Admin Modal: Profile image loaded successfully"
                       );
                     }}
                     onError={(e) => {
                       console.error(
-                        "Admin Modal: Profile image failed to load:",
+                        "❌ Admin Modal: Profile image failed to load:",
                         e.target.src
                       );
                       e.target.style.display = "none";
@@ -474,8 +491,8 @@ const AdminProfileModal = ({ isOpen, onClose }) => {
                     onClick={() => {
                       setIsEditing(false);
                       setFormData({
-                        name: user?.name || "",
-                        email: user?.email || "",
+                        name: adminProfile?.name || user?.name || "",
+                        email: adminProfile?.email || user?.email || "",
                         role: "Admin",
                       });
                       setError("");

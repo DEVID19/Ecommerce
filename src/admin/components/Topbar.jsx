@@ -123,7 +123,7 @@
 import { CalendarDays, Menu, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { loadAdminProfileImage } from "../../features/auth/authSlice";
+import { loadAdminData } from "../../features/auth/authSlice"; // ✅ Fixed: Use loadAdminData instead
 import AdminProfileModal from "../../models/AdminProfileModal";
 
 const Topbar = ({ toggleSidebar }) => {
@@ -132,7 +132,7 @@ const Topbar = ({ toggleSidebar }) => {
   const [showDropdown, setShowDropdown] = useState(false);
 
   const dispatch = useDispatch();
-  const { user, isAdmin, adminProfileImage } = useSelector(
+  const { user, isAdmin, adminProfileImage, adminProfile } = useSelector(
     (state) => state.auth
   );
 
@@ -147,12 +147,13 @@ const Topbar = ({ toggleSidebar }) => {
     setCurrentDate(formatted);
   }, []);
 
-  // Load admin profile image when component mounts
+  // ✅ Load admin data (including profile image) when component mounts or user changes
   useEffect(() => {
-    if (isAdmin && user?.$id && !adminProfileImage) {
-      dispatch(loadAdminProfileImage(user.$id));
+    if (isAdmin && user?.$id && !adminProfile) {
+      console.log("Topbar: Loading admin data for:", user.$id);
+      dispatch(loadAdminData(user.$id));
     }
-  }, [isAdmin, user?.$id, adminProfileImage, dispatch]);
+  }, [isAdmin, user?.$id, adminProfile, dispatch]);
 
   const handleProfileClick = () => {
     setShowProfileModal(true);
@@ -168,6 +169,9 @@ const Topbar = ({ toggleSidebar }) => {
       .toUpperCase()
       .slice(0, 2);
   };
+
+  // ✅ Get display name from adminProfile or fallback to user.name
+  const displayName = adminProfile?.name || user?.name || "Admin User";
 
   return (
     <>
@@ -212,14 +216,14 @@ const Topbar = ({ toggleSidebar }) => {
                       }}
                     />
                   ) : (
-                    <span className="text-sm">{getInitials(user.name)}</span>
+                    <span className="text-sm">{getInitials(displayName)}</span>
                   )}
                 </div>
 
                 {/* User Info */}
                 <div className="text-left">
                   <p className="text-sm font-medium text-gray-700">
-                    {user.name || "Admin User"}
+                    {displayName}
                   </p>
                   <p className="text-xs text-gray-500">Administrator</p>
                 </div>
@@ -252,11 +256,6 @@ const Topbar = ({ toggleSidebar }) => {
             <h1 className="text-gray-600">Hello User</h1>
           )}
         </div>
-
-        {/* Mobile - Just show text */}
-        {/* <div className="md:hidden">
-          <h1 className="text-gray-600 text-sm">Hello Admin</h1>
-        </div> */}
       </header>
 
       {/* Close dropdown when clicking outside */}

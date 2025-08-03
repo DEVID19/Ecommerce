@@ -37,7 +37,7 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { account } from "../appwrite/appwriteClient";
+import { account, databases, Query, ID } from "../appwrite/appwriteClient";
 import { setAdmin } from "../features/auth/authSlice";
 import { useDispatch } from "react-redux";
 
@@ -47,48 +47,181 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
-  // const handleLogin = async () => {
-  //   setLoading(true);
-  //   setError('');
-  //   try {
-  //     await account.createSession(email, password);
-  //     navigate('/admin-dashboard');
-  //   } catch (err) {
-  //     setError(err.message);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const dispatch = useDispatch();
+
+  // Updated admin emails to match your console EXACTLY
+  const ADMIN_EMAILS = [
+    "admin1@gmail.com",
+    "admin2@gmail.com",
+    "admin3@gmail.com",
+  ];
+
+  const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
+  const ADMINS_COLLECTION_ID =
+    import.meta.env.VITE_APPWRITE_ADMINS_COLLECTION_ID || "admins";
+
+  // ✅ FIXED: Only use attributes that exist in your collection
+  const createAdminProfile = async (user) => {
+    try {
+      console.log("🔄 Creating admin profile for:", user.email);
+      console.log("📋 Using DATABASE_ID:", DATABASE_ID);
+      console.log("📋 Using ADMINS_COLLECTION_ID:", ADMINS_COLLECTION_ID);
+
+      // Only use the attributes that exist in your collection schema
+      const adminDoc = await databases.createDocument(
+        DATABASE_ID,
+        ADMINS_COLLECTION_ID,
+        ID.unique(),
+        {
+          userId: user.$id,
+          name: user.name || "Admin User",
+          email: user.email,
+          role: "Admin",
+          joinedDate: new Date().toISOString(),
+          // Removed lastLogin and lastUpdated as they don't exist in your schema
+        }
+      );
+
+      console.log("✅ Admin profile created successfully:", adminDoc);
+      return adminDoc;
+    } catch (error) {
+      console.error("❌ Failed to create admin profile:", error);
+      console.error("Error details:", {
+        message: error.message,
+        code: error.code,
+        type: error.type,
+      });
+
+      // Check for specific permission errors
+      if (error.message.includes("missing scope") || error.code === 401) {
+        throw new Error(
+          "Permission denied: Please check your Appwrite collection permissions for 'admins' collection. Make sure 'Any' role has Create, Read, Update, Delete permissions."
+        );
+      }
+
+      throw error;
+    }
+  };
 
   const handleLogin = async () => {
     setLoading(true);
     setError("");
+
+    console.log("🔐 Attempting admin login with:", email);
+
     try {
-      await account.deleteSessions(); // Optional: force logout previous session
-      await account.createEmailPasswordSession(email, password); // OR createSession
-      const user = await account.get(); // fetch logged-in user info
-
-      dispatch(setAdmin(user)); // ✅ This updates Redux with admin info
-
-      // Check if admin was valid (optional, for extra security)
-      if (
-        ![
-          "admin@zaptra.com",
-          "admin2@example.com",
-          "admin3@example.com",
-        ].includes(user.email)
-      ) {
-        setError("Access denied. Not an authorized admin.");
-        await account.deleteSession("current");
+      // 🔥 STEP 1: Validate admin email first
+      if (!ADMIN_EMAILS.includes(email.toLowerCase())) {
+        setError(
+          "Access denied. This email is not authorized for admin access."
+        );
         return;
       }
 
-      navigate("/admin"); // or /admin-dashboard if that's your route
+      // First, ensure we're logged out
+      try {
+        await account.deleteSession("current");
+        console.log("✅ Previous session deleted");
+      } catch (logoutError) {
+        console.log("ℹ️ No existing session to logout");
+      }
+
+      console.log("🔄 Creating new admin session...");
+
+      // Create new session
+      const session = await account.createEmailPasswordSession(email, password);
+      console.log("✅ Session created successfully:", session);
+
+      console.log("👤 Getting user info...");
+
+      // Get user info
+      const user = await account.get();
+      console.log("✅ User info retrieved:", user);
+
+      // 🔥 STEP 2: Double-check email authorization
+      if (!ADMIN_EMAILS.includes(user.email)) {
+        console.log("❌ Access denied - email not in admin list after login");
+        await account.deleteSession("current");
+        setError("Access denied. Not an authorized admin email.");
+        return;
+      }
+
+      console.log("✅ Admin email verified");
+
+      // 🔥 STEP 3: Check/Create admin record in database
+      try {
+        console.log("🔍 Checking admin record in database...");
+        const adminCheck = await databases.listDocuments(
+          DATABASE_ID,
+          ADMINS_COLLECTION_ID,
+          [Query.equal("userId", user.$id), Query.limit(1)]
+        );
+
+        if (adminCheck.documents.length === 0) {
+          console.log("📝 No admin record found, creating new one...");
+
+          // ✅ CRITICAL: Create admin record with only existing attributes
+          const newAdminProfile = await createAdminProfile(user);
+          console.log("✅ New admin profile created:", newAdminProfile.$id);
+        } else {
+          console.log("✅ Admin record exists:", adminCheck.documents[0].$id);
+          
+          // ✅ FIXED: Don't try to update lastLogin if it doesn't exist
+          console.log("✅ Admin profile already exists, skipping update");
+        }
+      } catch (dbError) {
+        console.error("❌ Database operation failed:", dbError);
+
+        // ✅ CRITICAL: Don't continue if database operations fail
+        await account.deleteSession("current");
+
+        if (dbError.message.includes("Permission denied")) {
+          setError(
+            `Database Permission Error: ${dbError.message}\n\nPlease check your Appwrite 'admins' collection permissions:\n1. Go to Appwrite Console\n2. Navigate to your 'admins' collection\n3. Go to Settings → Permissions\n4. Add 'Any' role with Create, Read, Update, Delete permissions`
+          );
+        } else if (dbError.message.includes("Unknown attribute")) {
+          setError(
+            `Database Schema Error: ${dbError.message}\n\nPlease ensure your 'admins' collection has the correct attributes defined.`
+          );
+        } else {
+          setError(`Database Error: ${dbError.message}`);
+        }
+        return;
+      }
+
+      console.log("✅ Admin access granted");
+
+      // Update Redux with admin info
+      dispatch(setAdmin(user));
+      console.log("✅ Redux updated with admin info");
+
+      // Navigate to admin dashboard
+      console.log("🚀 Navigating to admin dashboard");
+      navigate("/admin");
     } catch (err) {
-      setError(err.message || "Failed to log in");
+      console.error("❌ Login error:", err);
+      console.error("Error details:", {
+        message: err.message,
+        code: err.code,
+        type: err.type,
+        response: err.response,
+      });
+
+      // Handle specific error cases
+      if (err.message.includes("Invalid credentials") || err.code === 401) {
+        setError("Invalid email or password. Please check your credentials.");
+      } else if (err.message.includes("Permission denied")) {
+        setError(err.message);
+      } else if (err.message.includes("User (role: guests) missing scope")) {
+        setError(`Authentication scope error. Please ensure:
+        1. Your Appwrite project settings are correct
+        2. The user exists in Appwrite console
+        3. Try using: admin1@gmail.com`);
+      } else if (err.message.includes("Invalid email")) {
+        setError("Please enter a valid email address.");
+      } else {
+        setError(`Login failed: ${err.message}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -134,13 +267,23 @@ export default function AdminLogin() {
               </p>
             </div>
 
+            {/* Authorized Emails Notice */}
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+              <p className="text-blue-700 text-xs">
+                🔐 Only authorized admin emails can access this portal
+              </p>
+              <p className="text-blue-600 text-xs mt-1">
+                Authorized: {ADMIN_EMAILS.join(", ")}
+              </p>
+            </div>
+
             {/* Form */}
             <div className="space-y-4">
               <div className="group">
                 <div className="relative">
                   <input
                     type="email"
-                    placeholder="Admin email"
+                    placeholder="Admin email address"
                     className="w-full px-4 py-3 pl-12 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 group-hover:bg-gray-100"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -188,7 +331,9 @@ export default function AdminLogin() {
 
               {error && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
-                  <p className="text-red-600 text-sm text-center">{error}</p>
+                  <p className="text-red-600 text-sm text-center whitespace-pre-line">
+                    {error}
+                  </p>
                 </div>
               )}
 

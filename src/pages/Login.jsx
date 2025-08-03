@@ -97,18 +97,26 @@ export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // 🔥 CRITICAL: Prevent duplicate processing
+  // CRITICAL: Prevent duplicate processing
   const processedRef = useRef(false);
   const isProcessingRef = useRef(false);
 
   const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
   const USERS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_USERS_COLLECTION_ID;
+  const ADMINS_COLLECTION_ID =
+    import.meta.env.VITE_APPWRITE_ADMINS_COLLECTION_ID || "admins";
+
+  // Admin emails that should not login through user login
+  const ADMIN_EMAILS = [
+    "admin1@gmail.com",
+    "admin2@gmail.com",
+    "admin3@gmail.com",
+  ];
 
   useEffect(() => {
     const handleOAuthCallback = async () => {
       const urlParams = new URLSearchParams(window.location.search);
 
-      // 🔥 STEP 1: Check if already processed or currently processing
       if (processedRef.current || isProcessingRef.current) {
         console.log(
           "⚠️ OAuth callback already processed/processing, skipping..."
@@ -117,7 +125,6 @@ export default function Login() {
       }
 
       if (urlParams.get("oauth_success") === "true") {
-        // 🔥 STEP 2: Mark as processing immediately
         isProcessingRef.current = true;
         processedRef.current = true;
 
@@ -125,7 +132,6 @@ export default function Login() {
         setLoading(true);
 
         try {
-          // Wait longer for session to be established
           await new Promise((resolve) => setTimeout(resolve, 2000));
 
           const user = await account.get();
@@ -135,9 +141,19 @@ export default function Login() {
             throw new Error("No user session found after OAuth");
           }
 
+          // 🔥 CHECK: Prevent admin emails from logging in through user login
+          if (ADMIN_EMAILS.includes(user.email)) {
+            setError("Admin accounts must use Admin Login. Redirecting...");
+            await account.deleteSession("current");
+            setTimeout(() => {
+              navigate("/admin-login");
+            }, 2000);
+            return;
+          }
+
           dispatch(setUser(user));
 
-          // 🔥 STEP 3: Atomic document creation with multiple safeguards
+          // Atomic document creation with multiple safeguards
           let documentProcessed = false;
           let retryCount = 0;
           const maxRetries = 2;
@@ -150,7 +166,6 @@ export default function Login() {
                 })...`
               );
 
-              // Check if document exists
               const existing = await databases.listDocuments(
                 DATABASE_ID,
                 USERS_COLLECTION_ID,
@@ -162,11 +177,10 @@ export default function Login() {
               if (existing.total === 0) {
                 console.log("📝 Creating user document for Google login...");
 
-                // 🔥 Create document with unique timestamp to prevent race conditions
                 const userDoc = await databases.createDocument(
                   DATABASE_ID,
                   USERS_COLLECTION_ID,
-                  `${user.$id}_${Date.now()}`, // 🔥 Unique ID based on user ID + timestamp
+                  `${user.$id}_${Date.now()}`,
                   {
                     userId: user.$id,
                     name: user.name || "Google User",
@@ -194,16 +208,14 @@ export default function Login() {
                 console.log("⏳ Retrying in 1 second...");
                 await new Promise((resolve) => setTimeout(resolve, 1000));
               } else {
-                // Don't throw error for document creation failure, user is still authenticated
                 console.log(
                   "⚠️ Document creation failed after retries, but user is authenticated"
                 );
-                documentProcessed = true; // Stop trying
+                documentProcessed = true;
               }
             }
           }
 
-          // Clean URL and navigate
           window.history.replaceState({}, document.title, "/");
           console.log("🎯 Navigating to home page...");
           navigate("/");
@@ -211,7 +223,6 @@ export default function Login() {
           console.error("❌ OAuth callback processing failed:", err);
           setError(`Authentication failed: ${err.message}`);
 
-          // 🔥 Reset flags on error to allow retry
           processedRef.current = false;
           isProcessingRef.current = false;
         } finally {
@@ -223,19 +234,28 @@ export default function Login() {
         setError("Google authentication failed");
         window.history.replaceState({}, document.title, "/login");
 
-        // Reset flags on error
         processedRef.current = false;
         isProcessingRef.current = false;
       }
     };
 
     handleOAuthCallback();
-  }, [dispatch, navigate, DATABASE_ID, USERS_COLLECTION_ID]);
+  }, [dispatch, navigate, DATABASE_ID, USERS_COLLECTION_ID, ADMIN_EMAILS]);
 
   const handleLogin = async () => {
     setLoading(true);
     setError("");
+
     try {
+      // 🔥 CHECK: Prevent admin emails from logging in through user login
+      if (ADMIN_EMAILS.includes(email.toLowerCase())) {
+        setError("Admin accounts must use Admin Login. Redirecting...");
+        setTimeout(() => {
+          navigate("/admin-login");
+        }, 2000);
+        return;
+      }
+
       // 1. Create session
       await account.createEmailPasswordSession(email, password);
 
@@ -243,10 +263,20 @@ export default function Login() {
       const user = await account.get();
       console.log("📧 Email login user:", user);
 
-      // 3. Dispatch to Redux
+      // 3. Double-check user is not admin (safety check)
+      if (ADMIN_EMAILS.includes(user.email)) {
+        await account.deleteSession("current");
+        setError("Admin accounts must use Admin Login. Redirecting...");
+        setTimeout(() => {
+          navigate("/admin-login");
+        }, 2000);
+        return;
+      }
+
+      // 4. Dispatch to Redux
       dispatch(setUser(user));
 
-      // 4. Navigate to home
+      // 5. Navigate to home
       navigate("/");
     } catch (err) {
       console.error("❌ Email login error:", err);
@@ -266,7 +296,6 @@ export default function Login() {
     try {
       console.log("🚀 Starting Google OAuth login...");
 
-      // 🔥 Reset processing flags before new OAuth attempt
       processedRef.current = false;
       isProcessingRef.current = false;
 
@@ -299,6 +328,16 @@ export default function Login() {
                 Welcome Back
               </h2>
               <p className="text-gray-600 text-sm">Sign in to your account</p>
+            </div>
+
+            {/* Admin Notice */}
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
+              <p className="text-yellow-700 text-xs text-center">
+                🔒 Admin users must use{" "}
+                <a href="/admin-login" className="font-semibold underline">
+                  Admin Login
+                </a>
+              </p>
             </div>
 
             {/* Form */}
