@@ -185,7 +185,7 @@ import { FaCaretDown } from "react-icons/fa";
 import { IoCartOutline } from "react-icons/io5";
 import { Link, NavLink } from "react-router-dom";
 import LocationSelector from "../models/LocationSelector";
-import { fetchUserLocation } from "../api/LocationApi";
+import { fetchUserLocation } from "../api/locationApi";
 import { HiMenuAlt1, HiMenuAlt3 } from "react-icons/hi";
 import ResponsiveMenu from "./ResponsiveMenu";
 import { useSelector, useDispatch } from "react-redux";
