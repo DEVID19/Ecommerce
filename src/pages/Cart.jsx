@@ -10,9 +10,9 @@ import {
 } from "../features/cart/cartSlice";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import CheckoutModal from "../models/checkOutModel";
 import { Link } from "react-router-dom";
 import { fetchUserLocation } from "../api/locationApi";
+import CheckOutModal from "../models/CheckOutModel";
 
 
 const Cart = () => {
@@ -263,7 +263,7 @@ const Cart = () => {
         </div>
       )}
       {/* Checkout Modal */}
-      <CheckoutModal
+      <CheckOutModal
         isOpen={isCheckoutModalOpen}
         onClose={() => setIsCheckoutModalOpen(false)}
         cartItems={cartItems}

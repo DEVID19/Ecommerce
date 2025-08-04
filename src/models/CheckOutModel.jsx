@@ -9,7 +9,7 @@ import { clearCart } from "../features/cart/cartSlice";
 import { toast } from "react-toastify";
 import { clearUserCart } from "../features/cart/cartService";
 
-const CheckoutModal = ({
+const CheckOutModal = ({
   isOpen,
   onClose,
   cartItems,
@@ -417,4 +417,4 @@ const CheckoutModal = ({
   );
 };
 
-export default CheckoutModal;
+export default CheckOutModal;
