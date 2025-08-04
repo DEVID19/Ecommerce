@@ -8,12 +8,12 @@ import {
   removeItemFromCart,
   updateItemQuantity,
 } from "../features/cart/cartSlice";
-import { fetchUserLocation } from "../api/LocationApi";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import CheckoutModal from "../models/checkOutModel";
 import { Link } from "react-router-dom";
-// import CheckoutModal from "../models/CheckOutModel";
+import { fetchUserLocation } from "../api/locationApi";
+
 
 const Cart = () => {
   const [location, setLocation] = useState(null);
