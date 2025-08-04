@@ -151,7 +151,7 @@ import AdminCustomers from "./admin/pages/AdminCustomers";
 import AdminAnalytics from "./admin/pages/AdminAnalytics";
 import AdminDashboard from "./admin/pages/AdminDashboard";
 import Login from "./pages/Login";
-import Signup from "./pages/SignUp";
+import Signup from "./pages/Signup";
 import AdminLogin from "./pages/AdminLogin";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
