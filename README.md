@@ -64,9 +64,10 @@ src/
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/DEVID19/spendwise.git
-cd spendwise
+git clone https://github.com/DEVID19/Ecommerce.git
+cd ecommerce 
 npm install
+npm run dev
 ---
 ### 2. Add Environment Variables
 
