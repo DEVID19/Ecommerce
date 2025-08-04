@@ -1,5 +1,5 @@
-import  { useState } from "react";
-import { fetchUserLocation } from "../api/LocationApi";
+import { useState } from "react";
+import { fetchUserLocation } from "../api/locationApi";
 import { CgClose } from "react-icons/cg";
 
 const LocationSelector = ({ openDropdown, setOpenDropdown, setLocation }) => {
