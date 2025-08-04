@@ -1,4 +1,4 @@
-# 💻 Zaptra – Electronics E-Commerce Platform
+# ⚡ Zaptra – Electronics E-Commerce Platform
 
 Zaptra is a modern, full-stack electronics store enabling users to browse, add to cart, and place orders—while admins manage products, orders, and analytics. Built with React, Redux Toolkit, Tailwind CSS, and powered by Appwrite for authentication, storage, and database.
 
