@@ -1,45 +1,9 @@
-// import { useState } from 'react';
-// import { useNavigate } from 'react-router-dom';
-// import { account } from '../appwrite/appwriteClient';
-
-// export default function AdminLogin() {
-//   const [email, setEmail] = useState('');
-//   const [password, setPassword] = useState('');
-//   const [loading, setLoading] = useState(false);
-//   const [error, setError] = useState('');
-//   const navigate = useNavigate();
-
-//   const handleLogin = async () => {
-//     setLoading(true);
-//     setError('');
-//     try {
-//       await account.createSession(email, password);
-//       navigate('/admin-dashboard');
-//     } catch (err) {
-//       setError(err.message);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-//       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
-//         <h2 className="text-xl font-semibold text-center mb-4">Admin Login</h2>
-//         <input type="email" placeholder="Email" className="input mb-2" value={email} onChange={(e) => setEmail(e.target.value)} />
-//         <input type="password" placeholder="Password" className="input mb-2" value={password} onChange={(e) => setPassword(e.target.value)} />
-//         {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-//         <button className="btn w-full" onClick={handleLogin} disabled={loading}>{loading ? 'Logging in...' : 'Login'}</button>
-//       </div>
-//     </div>
-//   );
-// }
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { account, databases, Query, ID } from "../appwrite/appwriteClient";
 import { setAdmin } from "../features/auth/authSlice";
 import { useDispatch } from "react-redux";
+import { AtSign, Lock, LockKeyhole, ShieldCheck } from "lucide-react";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -165,7 +129,7 @@ export default function AdminLogin() {
           console.log("✅ New admin profile created:", newAdminProfile.$id);
         } else {
           console.log("✅ Admin record exists:", adminCheck.documents[0].$id);
-          
+
           // ✅ FIXED: Don't try to update lastLogin if it doesn't exist
           console.log("✅ Admin profile already exists, skipping update");
         }
@@ -245,19 +209,7 @@ export default function AdminLogin() {
             {/* Header */}
             <div className="text-center mb-8">
               <div className="w-16 h-16 mx-auto mb-4 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
-                <svg
-                  className="w-8 h-8 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                  />
-                </svg>
+                <ShieldCheck size={35} className="text-white" />
               </div>
               <h2 className="text-3xl font-bold text-gray-800 mb-2">
                 Admin Portal
@@ -274,6 +226,8 @@ export default function AdminLogin() {
               </p>
               <p className="text-blue-600 text-xs mt-1">
                 Authorized: {ADMIN_EMAILS.join(", ")}
+                <br />
+                password = pass1234
               </p>
             </div>
 
@@ -288,19 +242,7 @@ export default function AdminLogin() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
-                  <svg
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
-                    />
-                  </svg>
+                  <AtSign className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 </div>
               </div>
 
@@ -313,19 +255,7 @@ export default function AdminLogin() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
-                  <svg
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                    />
-                  </svg>
+                  <LockKeyhole className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 </div>
               </div>
 
@@ -350,17 +280,8 @@ export default function AdminLogin() {
                   </div>
                 ) : (
                   <div className="flex items-center justify-center space-x-2">
-                    <svg
-                      className="w-4 h-4"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                    <LockKeyhole className="w-4 h-4 text-white" />
+
                     <span>Access Admin Panel</span>
                   </div>
                 )}

@@ -19,11 +19,9 @@ import {
   Query,
 } from "../appwrite/appwriteClient";
 import {
-  clearProfileImage,
   logout,
   setProfileImage,
   updateUserProfile,
-  refreshProfileImage,
 } from "../features/auth/authSlice";
 import { useNavigate } from "react-router-dom";
 

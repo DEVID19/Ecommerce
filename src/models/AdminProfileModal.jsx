@@ -521,7 +521,7 @@ const AdminProfileModal = ({ isOpen, onClose }) => {
           {/* Additional Actions */}
           <div className="border-t border-gray-200 pt-6 space-y-3">
             {/* Admin Settings Button */}
-            <button
+            {/* <button
               onClick={() => {
                 navigate("/admin/settings");
                 onClose();
@@ -530,7 +530,7 @@ const AdminProfileModal = ({ isOpen, onClose }) => {
             >
               <Settings className="w-4 h-4" />
               Admin Settings
-            </button>
+            </button> */}
 
             {/* Logout Button */}
             <button

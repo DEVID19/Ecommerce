@@ -1,4 +1,3 @@
-import React from "react";
 import { IoCartOutline } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { addItemToCart } from "../features/cart/cartSlice";

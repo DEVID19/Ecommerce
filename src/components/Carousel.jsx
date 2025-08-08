@@ -22,25 +22,6 @@ const Carousel = () => {
   if (status === "loading") return <p>Loading...</p>;
   if (status === "failed") return <p>Error in fetching the Productdata</p>;
 
-  // const laptops = products.filter(
-  //   (item) => item.category.toLowerCase() === "laptops"
-  // );
-
-  // const smartphones = products.filter(
-  //   (item) => item.category.toLowerCase() === "mobile-accessories"
-  // );
-  // const watches = products.filter(
-  //   (item) => item.category.toLowerCase() === "mens-watches"
-  // );
-  // // Slice separately to balance both categories
-  // const mixedCarouselData = [
-  //   ...laptops.slice(0, 4),
-  //   ...smartphones.slice(0, 3),
-  //   ...watches.slice(0, 6),
-  // ];
-  // console.log(mixedCarouselData);
-  // console.log(products.map((item) => item.category));
-
   const SamplePrevArrow = (props) => {
     const { className, style, onClick } = props;
     return (

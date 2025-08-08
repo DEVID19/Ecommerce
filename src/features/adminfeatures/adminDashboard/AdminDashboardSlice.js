@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import {
-  getDashboardStats,
   getRecentOrders,
   getAllOrders,
   updateOrderStatus,
@@ -9,6 +8,7 @@ import {
   getCustomerAnalytics,
   searchOrders,
   getMonthlyRevenue,
+  getDashboardStats,
 } from "./AdminDashboardService.js";
 
 const initialState = {

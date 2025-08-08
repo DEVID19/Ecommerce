@@ -1,5 +1,3 @@
-import React from "react";
-
 const getPages = (current, total) => {
   const pages = [];
   if (total <= 5) {

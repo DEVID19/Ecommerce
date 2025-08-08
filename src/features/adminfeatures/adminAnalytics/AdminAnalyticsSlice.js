@@ -120,6 +120,7 @@ export const fetchTopProducts = createAsyncThunk(
 export const fetchAllAnalyticsData = createAsyncThunk(
   "adminAnalytics/fetchAllAnalyticsData",
   async (_, { dispatch }) => {
+    // eslint-disable-next-line no-useless-catch
     try {
       // Fetch all analytics data in parallel
       await Promise.all([
